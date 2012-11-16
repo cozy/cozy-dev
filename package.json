@@ -4,7 +4,10 @@
   "description": "Tools to start and deploy Cozy applications easily",
   "main": "./lib/index",
   "scripts": {
-    "test": "cake test"
+    "prepublish": "coffee -o lib/ src/"
+  },
+  "bin": {
+    "cozy": "./bin/cozy"
   },
   "repository": {
     "type": "git",
@@ -17,6 +20,18 @@
     "web",
     "application"
   ],
+  "engines": {
+    "node": "0.8 || 0.9"
+  },
+  "dependencies": {
+    "coffee-script": "~1.3.3",
+    "commander": "=1.0.5",
+    "request": "=2.12.0",
+    "async": "=0.1.22",
+    "request-json": "=0.2.9"
+  },
+  "devDependencies": {
+  },
   "author": "Cozy Cloud",
   "license": "BSD"
 }
