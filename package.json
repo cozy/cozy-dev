@@ -1,6 +1,6 @@
 {
   "name": "cozy-manager",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "Tools to start and deploy Cozy applications easily",
   "main": "./lib/main",
   "scripts": {
