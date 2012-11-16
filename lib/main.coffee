@@ -35,7 +35,7 @@ createLocalRepo = (appname, callback) ->
     cmds.push "cd #{appname}/client && npm install"
 
     console.log "Create new directory for your app"
-    executeUntilEmpty cmds, =>
+    executeUntilEmpty cmds, ->
         console.log "Project directory created."
         callback()
 
@@ -165,7 +165,7 @@ program
     .description("Uninstall given application")
     .action (app) ->
         console.log "Uninstall started for #{app}..."
-        client.configure ->
+        client.configure program.url, program.password, ->
             path = "api/applications/#{app}/uninstall"
             client.del path, (err, res, body) ->
                 if err or res.statusCode isnt 200
@@ -243,7 +243,7 @@ program
                             async.series funcs, ->
      
         client = new Client ""
-        client.configure checkStatus
+        client.configure program.url, program.password, checkStatus
 
 program
     .command("new <appname>")
@@ -268,7 +268,8 @@ program
                                     process.exit 0
 
         else
-            createLocalRepo appname
+            createLocalRepo appname, ->
+                console.log "project creation finished."
 
 program
     .command("deploy")
