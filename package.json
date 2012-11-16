@@ -1,0 +1,22 @@
+{
+  "name": "cozy-manager",
+  "version": "0.1.0",
+  "description": "Tools to start and deploy Cozy applications easily",
+  "main": "./lib/index",
+  "scripts": {
+    "test": "cake test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mycozycloud/cozy-manager"
+  },
+  "keywords": [
+    "build",
+    "deploy",
+    "cozy",
+    "web",
+    "application"
+  ],
+  "author": "Cozy Cloud",
+  "license": "BSD"
+}
