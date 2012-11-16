@@ -1,7 +1,7 @@
-#!/usr/bin/env node
+#!/usr/bin/env coffee
 
-var path = require('path');
-var fs = require('fs');
+path = require('path')
+fs = require('fs')
 
-var src = path.join(path.dirname(fs.realpathSync(__filename)), '..', 'lib');
-require(path.join(src, 'main')).run();
+src = path.join(path.dirname(fs.realpathSync(__filename)), '..', 'lib')
+require(path.join(src, 'main'));
