@@ -88,6 +88,4 @@ class exports.ApplicationManager
     isInstalled: (app, url, password, callback) =>
         @client.configure url, password, =>
             @client.get "apps/#{app.toLowerCase()}/", (err, res, body) ->
-                console.log body
-                
                 callback err, res.statusCode == 200
