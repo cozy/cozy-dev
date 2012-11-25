@@ -1,5 +1,5 @@
 {
-  "name": "cozy-manager",
+  "name": "cozy",
   "version": "0.2.0",
   "description": "Tools to start and deploy Cozy applications easily",
   "main": "./lib/main",
