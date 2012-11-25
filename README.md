@@ -3,7 +3,7 @@
 Cozy Manager is a tool for Cozy Web Application developers. It makes easy to
 start with building an application for the Cozy Cloud Platform.
 
-    npm install cozy-manager -g
+    npm install cozy -g
     cozy new myapp --github myaccount
     cd myapp
 
