@@ -7,7 +7,7 @@ start with building an application for the Cozy Cloud Platform.
     cozy new myapp --github myaccount
     cd myapp
 
-After working on your app
+Add some features, then:
 
     cozy deploy
 
