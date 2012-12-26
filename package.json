@@ -2,6 +2,7 @@
   "name": "cozy",
   "version": "0.2.0",
   "description": "Tools to start and deploy Cozy applications easily",
+  "license": "LGPL v3"
   "main": "./lib/main",
   "scripts": {
     "prepublish": "cake build"
@@ -33,5 +34,4 @@
   "devDependencies": {
   },
   "author": "Cozy Cloud",
-  "license": "BSD"
 }
