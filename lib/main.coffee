@@ -79,7 +79,7 @@ program
                         console.log "project creation finished."
                         process.exit 0
         else
-            console.log "Create project folder: #{name}"
+            console.log "Create project folder: #{appname}"
             repoManager.createLocalRepo appname, ->
                 console.log "project creation finished."
 
