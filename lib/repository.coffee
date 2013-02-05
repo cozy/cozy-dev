@@ -40,7 +40,7 @@ class exports.RepoManager
             if err
                 console.log "An error occured while creating repository."
                 console.log err
-            else if res.statusCode is not 201
+            else if res.statusCode isnt 201
                 console.log "Cannot create repository on Github."
                 console.log body
             else
