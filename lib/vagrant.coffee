@@ -5,7 +5,6 @@ Client = require('request-json').JsonClient
 
 helpers = require './helpers'
 
-
 class exports.VagrantManager
 
     @baseBoxVersion = '0.1.0'
