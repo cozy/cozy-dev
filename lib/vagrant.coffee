@@ -54,5 +54,3 @@ class exports.VagrantManager
             r = if err is null then "OK".green else "KO".red
             console.log service + " at http://" + domain + ":" + port + \
                         "........." + r
-
-
