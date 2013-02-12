@@ -5,7 +5,7 @@ Client = require('request-json').JsonClient
 helpers = require './helpers'
 
 
-class exports.RepoManager
+module.exports = class RepoManager
 
     createLocalRepo: (appname, callback) ->
         console.log "Github repo created succesfully."
