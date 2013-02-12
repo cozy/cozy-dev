@@ -13,19 +13,22 @@ Client::configure = (url, password, callback) ->
 
 client = new Client ""
 
-RepoManager = require('./repository').RepoManager
+RepoManager = require('./repository')
 repoManager = new RepoManager()
 
-ApplicationManager = require('./application').ApplicationManager
+ApplicationManager = require('./application')
 appManager = new ApplicationManager()
 
-ProjectManager = require('./project').ProjectManager
+ProjectManager = require('./project')
 projectManager = new ProjectManager()
+
+VagrantManager = require('./vagrant')
+vagrantManager = new VagrantManager()
 
 ### Tasks ###
 
 program
-    .version('0.1.0')
+    .version('0.2.0')
     .option('-u, --url <url>',
             'set url where lives your Cozy Cloud, default to localhost')
     .option('-g, --github <github>',
