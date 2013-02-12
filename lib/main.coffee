@@ -82,7 +82,7 @@ program
                         console.log "project creation finished."
                         process.exit 0
         else
-            console.log "Create project folder: #{name}"
+            console.log "Create project folder: #{appname}"
             repoManager.createLocalRepo appname, ->
                 console.log "project creation finished."
 
@@ -101,7 +101,7 @@ program
     .command("*")
     .description("Display error message for an unknown command.")
     .action ->
-        console.log 'Unknown command, run "coffee monitor --help"' + \
+        console.log 'Unknown command, run "cozy --help"' + \
                     ' to know the list of available commands.'
                     
 program.parse process.argv
