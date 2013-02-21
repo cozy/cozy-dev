@@ -22,6 +22,9 @@ appManager = new ApplicationManager()
 ProjectManager = require('./project').ProjectManager
 projectManager = new ProjectManager()
 
+VagrantManager = require('./vagrant.coffee').VagrantManager
+vagrantManager = new VagrantManager()
+
 ### Tasks ###
 
 program
@@ -39,7 +42,7 @@ program
         program.password "Cozy password:", (password) ->
             appManager.installApp app, program.url, repo, password, ->
                 console.log "#{app} sucessfully installed"
-          
+
 program
     .command("uninstall <app>")
     .description("Uninstall given application")
@@ -95,10 +98,43 @@ program
                 console.log "#{config.cozy.appName} sucessfully deployed."
 
 program
+    .command("dev:init")
+    .description("Initialize the current folder to host a virtual machine" + \
+                 "with Vagrant. This will download the base box file.")
+    .action ->
+        console.log "Initializing the vritual machine in the folder..." + \
+                    "this might take a while"
+        vagrantManager.vagrantBoxAdd ->
+            vagrantManager.vagrantInit ->
+                console.log "The virtual ma chine has been successfully initialized."
+
+program
+    .command("dev:start")
+    .description("Starts the virtual machine with Vagrant.")
+    .action ->
+        console.log "Starting the virtual machine...this might take a while."
+        vagrantManager.vagrantUp ->
+            console.log "The virtual machine has been successfully started."
+
+program
+    .command("dev:stop")
+    .description("Stops the Virtual machine with Vagreant.")
+    .action ->
+        console.log "Stopping the virtual machine...this might take a while."
+        vagrantManager.vagrantHalt ->
+            console.log "The virtual machine has been successfully stopped."
+
+program
+    .command("dev:vm-status")
+    .description("Tells which services of the VM are running and accessible")
+    .action ->
+        vagrantManager.virtualMachineStatus()
+
+program
     .command("*")
     .description("Display error message for an unknown command.")
     .action ->
         console.log 'Unknown command, run "cozy --help"' + \
                     ' to know the list of available commands.'
-                    
+
 program.parse process.argv
