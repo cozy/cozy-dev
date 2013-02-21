@@ -15,7 +15,7 @@ class exports.VagrantManager
         cmds.push
             name: 'vagrant'
             args: ['box', 'add', @baseBoxURL]
-        helpers.executeSynchronously cmds, ->
+        helpers.spawnUntilEmpty cmds, ->
             console.log "The base box has been added to your environment".green
             callback()
 
@@ -24,21 +24,21 @@ class exports.VagrantManager
         cmds.push
             name: 'vagrant'
             args: ['init', "cozy-dev-#{@baseBoxVersion}"]
-        helpers.executeSynchronously cmds, callback
+        helpers.spawnUntilEmpty cmds, callback
 
     vagrantUp: (callback) ->
         cmds = []
         cmds.push
             name: 'vagrant'
             args: ['up']
-        helpers.executeSynchronously cmds, callback
+        helpers.spawnUntilEmpty cmds, callback
 
     vagrantHalt: (callback)  ->
         cmds = []
         cmds.push
             name: 'vagrant'
             args: ['halt']
-        helpers.executeSynchronously cmds, callback
+        helpers.spawnUntilEmpty cmds, callback
 
     virtualMachineStatus: ->
         @isServiceUp "Data System", "localhost", 9101

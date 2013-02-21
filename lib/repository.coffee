@@ -18,7 +18,7 @@ module.exports = class RepoManager
         cmds.push "cd #{appname}/client && npm install"
 
         console.log "Create new directory for your app"
-        helpers.executeUntilEmpty cmds, ->
+        helpers.execUntilEmpty cmds, ->
             console.log "Project directory created.".green
             callback()
 
@@ -30,7 +30,7 @@ module.exports = class RepoManager
         cmds.push "cd #{appname} && git add ."
         cmds.push "cd #{appname} && git commit -a -m \"first commit\""
         cmds.push "cd #{appname} && git push origin -u master"
-        helpers.executeUntilEmpty cmds, ->
+        helpers.execUntilEmpty cmds, ->
             console.log "Project linked to github repo.".green
             callback()
 
