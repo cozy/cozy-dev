@@ -5,7 +5,6 @@ Client = require('request-json').JsonClient
 
 helpers = require './helpers'
 
-
 class exports.VagrantManager
 
     @baseBoxVersion = '0.1.0'
@@ -54,5 +53,3 @@ class exports.VagrantManager
             r = if err is null then "OK".green else "KO".red
             console.log service + " at http://" + domain + ":" + port + \
                         "........." + r
-
-
