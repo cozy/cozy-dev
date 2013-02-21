@@ -35,7 +35,7 @@ class exports.VagrantManager
         cmds = []
         cmds.push
             name: 'vagrant'
-            args: ['init', "cozy-dev-#{@baseBoxVersion}"]
+            args: ['init', "cozy-dev-latest"]
         helpers.spawnUntilEmpty cmds, callback
 
     vagrantUp: (callback) ->
