@@ -120,7 +120,7 @@ program
 
 program
     .command("dev:stop")
-    .description("Stops the Virtual machine with Vagreant.")
+    .description("Stops the Virtual machine with Vagrant.")
     .action ->
         console.log "Stopping the virtual machine...this might take a while."
         vagrantManager.vagrantHalt ->
@@ -132,6 +132,7 @@ program
     .description("Tells which services of the VM are running and accessible")
     .action ->
         vagrantManager.virtualMachineStatus()
+        console.log "All the tests have been done."
 
 program
     .command("*")
