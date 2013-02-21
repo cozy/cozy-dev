@@ -1,3 +1,4 @@
+require 'colors'
 helpers = require './helpers'
 RepoManager = require('./repository').RepoManager
 ApplicationManager = require('./application').ApplicationManager
@@ -28,7 +29,7 @@ class exports.ProjectManager
             repoUrl = "https://github.com/#{user}/#{repoName}.git"
             @appManager.installApp name, url, repoUrl, password, ->
                 callback()
-                    
+
         update = =>
             @appManager.updateApp name, url, password, ->
                 callback()
@@ -36,7 +37,7 @@ class exports.ProjectManager
         @appManager.isInstalled name, url, password, (err, isInstalled) ->
             if err
                 console.log "Error occured while connecting" + \
-                            "to your Cozy Cloud."
+                            "to your Cozy Cloud.".red
             else if isInstalled
                 update()
             else

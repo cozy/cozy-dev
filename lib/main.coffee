@@ -1,4 +1,4 @@
-require "colors"
+require 'colors'
 program = require 'commander'
 path = require 'path'
 
@@ -22,6 +22,9 @@ appManager = new ApplicationManager()
 ProjectManager = require('./project').ProjectManager
 projectManager = new ProjectManager()
 
+VagrantManager = require('./vagrant.coffee').VagrantManager
+vagrantManager = new VagrantManager()
+
 ### Tasks ###
 
 program
@@ -38,15 +41,15 @@ program
     .action (app, repo) ->
         program.password "Cozy password:", (password) ->
             appManager.installApp app, program.url, repo, password, ->
-                console.log "#{app} sucessfully installed"
-          
+                console.log "#{app} sucessfully installed.".green
+
 program
     .command("uninstall <app>")
     .description("Uninstall given application")
     .action (app) ->
         program.password "Cozy password:", (password) ->
             appManager.uninstallApp app, program.url, password, ->
-               console.log "#{app} sucessfully uninstalled"
+               console.log "#{app} sucessfully uninstalled.".green
 
 program
     .command("update <app>")
@@ -55,7 +58,7 @@ program
     .action (app) ->
         program.password "Cozy password:", (password) ->
             appManager.updateApp app, program.url, password, ->
-                console.log "#{app} sucessfully updated"
+                console.log "#{app} sucessfully updated.".green
 
 program
     .command("status")
@@ -63,7 +66,7 @@ program
     .action ->
         program.password "Cozy password:", (password) ->
             appManager.checkStatus program.url, password, ->
-                console.log "all apps checked."
+                console.log "All apps have been checked.".green
 
 program
     .command("new <appname>")
@@ -76,12 +79,12 @@ program
             program.password "Github password:", (password) =>
                 program.prompt "Cozy Url:", (url) ->
                     projectManager.newProject appname, url, user, password, ->
-                        console.log "project creation finished."
+                        console.log "Project creation finished.".green
                         process.exit 0
         else
             console.log "Create project folder: #{appname}"
             repoManager.createLocalRepo appname, ->
-                console.log "project creation finished."
+                console.log "Project creation finished.".green
 
 program
     .command("deploy")
@@ -92,7 +95,41 @@ program
         config = require(path.join(process.cwd(), "deploy_config")).config
         program.password "Cozy password:", (password) ->
             projectManager.deploy config, password, ->
-                console.log "#{config.cozy.appName} sucessfully deployed."
+                console.log "#{config.cozy.appName} sucessfully deployed.".green
+
+program
+    .command("dev:init")
+    .description("Initialize the current folder to host a virtual machine" + \
+                 "with Vagrant. This will download the base box file.")
+    .action ->
+        console.log "Initializing the vritual machine in the folder..." + \
+                    "this might take a while"
+        vagrantManager.vagrantBoxAdd ->
+            vagrantManager.vagrantInit ->
+                console.log "The virtual machine has been successfully" + \
+                            "initialized.".green
+
+program
+    .command("dev:start")
+    .description("Starts the virtual machine with Vagrant.")
+    .action ->
+        console.log "Starting the virtual machine...this might take a while."
+        vagrantManager.vagrantUp ->
+            console.log "The virtual machine has been successfully started.".green
+
+program
+    .command("dev:stop")
+    .description("Stops the Virtual machine with Vagreant.")
+    .action ->
+        console.log "Stopping the virtual machine...this might take a while."
+        vagrantManager.vagrantHalt ->
+            console.log "The virtual machine has been successfully stopped.".green
+
+program
+    .command("dev:vm-status")
+    .description("Tells which services of the VM are running and accessible")
+    .action ->
+        vagrantManager.virtualMachineStatus()
 
 program
     .command("*")
@@ -100,5 +137,5 @@ program
     .action ->
         console.log 'Unknown command, run "cozy --help"' + \
                     ' to know the list of available commands.'
-                    
+
 program.parse process.argv

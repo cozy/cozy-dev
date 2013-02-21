@@ -1,3 +1,4 @@
+require 'colors'
 path = require 'path'
 fs = require 'fs'
 
@@ -18,7 +19,7 @@ class exports.RepoManager
 
         console.log "Create new directory for your app"
         helpers.executeUntilEmpty cmds, ->
-            console.log "Project directory created."
+            console.log "Project directory created.".green
             callback()
 
     connectRepos: (user, appname, callback) ->
@@ -30,7 +31,7 @@ class exports.RepoManager
         cmds.push "cd #{appname} && git commit -a -m \"first commit\""
         cmds.push "cd #{appname} && git push origin -u master"
         helpers.executeUntilEmpty cmds, ->
-            console.log "Project linked to github repo."
+            console.log "Project linked to github repo.".green
             callback()
 
     createGithubRepo: (credentials, repo, callback) ->
@@ -38,10 +39,10 @@ class exports.RepoManager
         client.setBasicAuth credentials.username, credentials.password
         client.post 'user/repos', name: repo, (err, res, body) ->
             if err
-                console.log "An error occured while creating repository."
+                console.log "An error occured while creating repository.".red
                 console.log err
             else if res.statusCode isnt 201
-                console.log "Cannot create repository on Github."
+                console.log "Cannot create repository on Github.".red
                 console.log body
             else
                 callback()
@@ -60,7 +61,7 @@ class exports.RepoManager
         """
         fs.writeFile path.join(app, 'deploy_config.coffee'), data, (err) ->
             if err
-                console.log err
+                console.log err.red
             else
-                console.log "Config file successfully saved."
+                console.log "Config file successfully saved.".green
                 callback()
