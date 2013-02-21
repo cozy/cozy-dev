@@ -7,8 +7,10 @@ helpers = require './helpers'
 
 class exports.VagrantManager
 
-    @baseBoxVersion = '0.1.0'
-    @baseBoxURL = 'https://www.cozycloud.cc/media/cozycloud-dev-' + @baseBoxVersion + '.box'
+    constructor: ->
+        @baseBoxVersion = '0.1.0'
+        @baseBoxURL = 'https://www.cozycloud.cc/media/cozycloud-dev-'
+        @baseBoxURL = @baseBoxVersion + '.box'
 
     vagrantBoxAdd: (callback) ->
         cmds = []
@@ -23,7 +25,7 @@ class exports.VagrantManager
         cmds = []
         cmds.push
             name: 'vagrant'
-            args: ['init', 'cozy-dev-' + @baseBoxVersion]
+            args: ['init', "cozy-dev-#{@baseBoxVersion}"]
         helpers.executeSynchronously cmds, callback
 
     vagrantUp: (callback) ->
@@ -41,15 +43,14 @@ class exports.VagrantManager
         helpers.executeSynchronously cmds, callback
 
     virtualMachineStatus: ->
-        @isServiceUp("Data System", "localhost", 9101)
-        @isServiceUp("Cozy Proxy", "localhost", 9104)
-        @isServiceUp("Couchdb", "localhost", 5984)
-        @isServiceUp("Redis", "localhost", 6379)
+        @isServiceUp "Data System", "localhost", 9101
+        @isServiceUp "Cozy Proxy", "localhost", 9104
+        @isServiceUp "Couchdb", "localhost", 5984
+        @isServiceUp "Redis", "localhost", 6379
 
     isServiceUp: (service, domain, port) ->
-        client = new Client "http://" + domain + ":" + port
-        isOk = false
+        url = "http://#{domain}:#{port}"
+        client = new Client url
         client.get '/', (err, res, body) ->
-            r = if err is null then "OK".green else "KO".red
-            console.log service + " at http://" + domain + ":" + port + \
-                        "........." + r
+            result = if err is null then "OK".green else "KO".red
+            console.log "#{service} at #{url}........." + result

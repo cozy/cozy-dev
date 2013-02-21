@@ -115,7 +115,8 @@ program
     .action ->
         console.log "Starting the virtual machine...this might take a while."
         vagrantManager.vagrantUp ->
-            console.log "The virtual machine has been successfully started.".green
+            msg = "The virtual machine has been successfully started."
+            console.log msg.green
 
 program
     .command("dev:stop")
@@ -123,7 +124,8 @@ program
     .action ->
         console.log "Stopping the virtual machine...this might take a while."
         vagrantManager.vagrantHalt ->
-            console.log "The virtual machine has been successfully stopped.".green
+            msg = "The virtual machine has been successfully stopped."
+            console.log msg.green
 
 program
     .command("dev:vm-status")
