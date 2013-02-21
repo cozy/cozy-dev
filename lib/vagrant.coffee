@@ -10,6 +10,18 @@ class exports.VagrantManager
     constructor: ->
         @baseBoxURL = 'https://www.cozycloud.cc/media/cozycloud-dev-latest.box'
 
+        page = 'Setup-cozy-cloud-development-environment-via-a-virtual-machine'
+        @docURL = "https://github.com/mycozycloud/cozy-setup/wiki/#{page}"
+
+    checkIfVagrantIsInstalled: (callback) ->
+        exec "vagrant -v", (err, stdout, stderr) ->
+            if err
+                msg =  "Vagrant is required to use a virtual machine." + \
+                        "Please, refer to our documentation on #{docURL}"
+                console.log msg.red
+            else
+                callback()
+
     vagrantBoxAdd: (callback) ->
         cmds = []
         cmds.push
