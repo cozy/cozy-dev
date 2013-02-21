@@ -8,9 +8,7 @@ helpers = require './helpers'
 class exports.VagrantManager
 
     constructor: ->
-        @baseBoxVersion = '0.1.0'
-        @baseBoxURL = 'https://www.cozycloud.cc/media/cozycloud-dev-'
-        @baseBoxURL = @baseBoxVersion + '.box'
+        @baseBoxURL = 'https://www.cozycloud.cc/media/cozycloud-dev-latest.box'
 
     vagrantBoxAdd: (callback) ->
         cmds = []
