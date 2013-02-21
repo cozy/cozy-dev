@@ -11,7 +11,8 @@ module.exports = class RepoManager
     createLocalRepo: (appname, callback) ->
         console.log "Github repo created succesfully."
         cmds = []
-        cmds.push "git clone https://github.com/mycozycloud/cozy-template.git #{appname}"
+        repo = "https://github.com/mycozycloud/cozy-template.git #{appname}"
+        cmds.push "git clone #{repo}"
         cmds.push "cd #{appname} && git submodule update --init --recursive"
         cmds.push "cd #{appname} && rm -rf .git"
         cmds.push "cd #{appname} && npm install"

@@ -49,7 +49,7 @@ program
     .action (app) ->
         program.password "Cozy password:", (password) ->
             appManager.uninstallApp app, program.url, password, ->
-               console.log "#{app} sucessfully uninstalled.".green
+                console.log "#{app} sucessfully uninstalled.".green
 
 program
     .command("update <app>")
@@ -91,7 +91,6 @@ program
     .description("Push code and deploy app located in current directory" + \
                  "to Cozy Cloud url configured in configuration file.")
     .action ->
-
         config = require(path.join(process.cwd(), "deploy_config")).config
         program.password "Cozy password:", (password) ->
             projectManager.deploy config, password, ->
