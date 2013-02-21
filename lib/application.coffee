@@ -1,3 +1,4 @@
+require 'colors'
 async = require 'async'
 helpers = require './helpers'
 
@@ -6,7 +7,7 @@ Client::configure = (url, password, callback) ->
     @host = url
     @post "login", password: password, (err, res, body) ->
         if err or res.statusCode != 200
-            console.log "Cannot get authenticated"
+            console.log "Cannot get authenticated".red
         else
             callback()
 
@@ -17,7 +18,7 @@ class exports.ApplicationManager
 
     checkError: (err, res, body, code, msg, callback) ->
         if err or res.statusCode isnt code
-            console.log err if err?
+            console.log err.red if err?
             console.log msg
             if body?
                 if body.msg?
@@ -33,7 +34,7 @@ class exports.ApplicationManager
         @client.configure url, password, =>
             path = "api/applications/#{app}/update"
             @client.put path, {}, (err, res, body) =>
-                @checkError err, res, body, 200, 'Update failed', callback
+                @checkError err, res, body, 200, 'Update failed.'.red, callback
 
     installApp: (app, url, repoUrl, password, callback) ->
         console.log "Install started for #{app}..."
@@ -44,14 +45,14 @@ class exports.ApplicationManager
 
             path = "api/applications/install"
             @client.post path, app_descriptor, (err, res, body) =>
-                @checkError err, res, body, 201, 'Install failed', callback
+                @checkError err, res, body, 201, 'Install failed.'.red, callback
 
     uninstallApp: (app, url, password, callback) ->
         console.log "Uninstall started for #{app}..."
         @client.configure url, password, =>
             path = "api/applications/#{app}/uninstall"
             @client.del path, (err, res, body) =>
-                @checkError err, res, body, 200, 'Uninstall failed', callback
+                @checkError err, res, body, 200, 'Uninstall failed.'.red, callback
 
     checkStatus: (url, password, callback) ->
         checkApp = (app) =>
@@ -74,14 +75,14 @@ class exports.ApplicationManager
             ], =>
                 @client.get "api/applications/", (err, res, apps) =>
                     if err
-                        console.log err
+                        console.log err.red
                     else
                         funcs = []
                         if apps? and typeof apps == "object"
                             funcs.push checkApp(app.name) for app in apps.rows
                             async.series funcs, ->
                                 callback()
-     
+
         @client.configure url, password, checkStatus
 
 

@@ -1,6 +1,6 @@
+require 'colors'
 path = require 'path'
 fs = require 'fs'
-net = require 'net'
 Client = require('request-json').JsonClient
 
 helpers = require './helpers'
@@ -17,7 +17,7 @@ class exports.VagrantManager
             name: 'vagrant'
             args: ['box', 'add', @baseBoxURL]
         helpers.executeSynchronously cmds, ->
-            console.log "The base box has been added to your environment"
+            console.log "The base box has been added to your environment".green
             callback()
 
     vagrantInit: (callback) ->
@@ -51,7 +51,7 @@ class exports.VagrantManager
         client = new Client "http://" + domain + ":" + port
         isOk = false
         client.get '/', (err, res, body) ->
-            r = if err is null then "OK" else "KO"
+            r = if err is null then "OK".green else "KO".red
             console.log service + " at http://" + domain + ":" + port + \
                         "........." + r
 

@@ -7,8 +7,6 @@ exports.executeUntilEmpty = (commands, callback) ->
 
     exec command, (err, stdout, stderr) ->
 
-        console.log stdout
-
         if err isnt null
             console.log stderr
         else if commands.length > 0
