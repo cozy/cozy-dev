@@ -2,7 +2,8 @@ exec = require('child_process').exec
 spawn = require('child_process').spawn
 
 
-# Execute sequentially given shell commands until there is no more command left.
+# Execute sequentially given shell commands with "exec"
+# until there is no more command left. Exec displays the output at the end.
 exports.execUntilEmpty = (commands, callback) ->
     command = commands.shift()
 
@@ -14,7 +15,8 @@ exports.execUntilEmpty = (commands, callback) ->
         else
             callback()
 
-
+# Execute sequentially given shell commands with "spawn"
+# until there is no more command left. Spawn displays the output as it comes.
 exports.spawnUntilEmpty = (commands, callback) ->
     commandDescriptor = commands.shift()
 
