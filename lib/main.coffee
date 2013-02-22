@@ -13,16 +13,16 @@ Client::configure = (url, password, callback) ->
 
 client = new Client ""
 
-RepoManager = require('./repository')
+RepoManager = require('./repository').RepoManager
 repoManager = new RepoManager()
 
-ApplicationManager = require('./application')
+ApplicationManager = require('./application').ApplicationManager
 appManager = new ApplicationManager()
 
-ProjectManager = require('./project')
+ProjectManager = require('./project').ProjectManager
 projectManager = new ProjectManager()
 
-VagrantManager = require('./vagrant')
+VagrantManager = require('./vagrant').VagrantManager
 vagrantManager = new VagrantManager()
 
 ### Tasks ###
@@ -49,7 +49,7 @@ program
     .action (app) ->
         program.password "Cozy password:", (password) ->
             appManager.uninstallApp app, program.url, password, ->
-               console.log "#{app} sucessfully uninstalled.".green
+                console.log "#{app} sucessfully uninstalled.".green
 
 program
     .command("update <app>")
@@ -91,7 +91,6 @@ program
     .description("Push code and deploy app located in current directory" + \
                  "to Cozy Cloud url configured in configuration file.")
     .action ->
-
         config = require(path.join(process.cwd(), "deploy_config")).config
         program.password "Cozy password:", (password) ->
             projectManager.deploy config, password, ->
@@ -103,35 +102,40 @@ program
                  "with Vagrant. This will download the base box file.")
     .action ->
         console.log "Initializing the vritual machine in the folder..." + \
-                    "this might take a while"
-        vagrantManager.vagrantBoxAdd ->
-            vagrantManager.vagrantInit ->
-                console.log "The virtual machine has been successfully" + \
-                            "initialized.".green
+                    "this may take a while."
+        vagrantManager.checkIfVagrantIsInstall ->
+            vagrantManager.vagrantBoxAdd ->
+                vagrantManager.vagrantInit ->
+                    console.log "The virtual machine has been successfully" + \
+                                "initialized.".green
 
 program
     .command("dev:start")
     .description("Starts the virtual machine with Vagrant.")
     .action ->
-        console.log "Starting the virtual machine...this might take a while."
-        vagrantManager.vagrantUp ->
-            msg = "The virtual machine has been successfully started."
-            console.log msg.green
+        vagrantManager.checkIfVagrantIsInstall ->
+            console.log "Starting the virtual machine...this may take a while."
+            vagrantManager.vagrantUp ->
+                msg = "The virtual machine has been successfully started."
+                console.log msg.green
 
 program
     .command("dev:stop")
-    .description("Stops the Virtual machine with Vagreant.")
+    .description("Stops the Virtual machine with Vagrant.")
     .action ->
-        console.log "Stopping the virtual machine...this might take a while."
-        vagrantManager.vagrantHalt ->
-            msg = "The virtual machine has been successfully stopped."
-            console.log msg.green
+        vagrantManager.checkIfVagrantIsInstall ->
+            console.log "Stopping the virtual machine...this may take a while."
+            vagrantManager.vagrantHalt ->
+                msg = "The virtual machine has been successfully stopped."
+                console.log msg.green
 
 program
     .command("dev:vm-status")
-    .description("Tells which services of the VM are running and accessible")
+    .description("Tells which services of the VM are running and accessible.")
     .action ->
-        vagrantManager.virtualMachineStatus()
+        vagrantManager.checkIfVagrantIsInstall ->
+            vagrantManager.virtualMachineStatus()
+            console.log "All the tests have been done."
 
 program
     .command("*")

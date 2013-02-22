@@ -5,20 +5,20 @@ fs = require 'fs'
 Client = require('request-json').JsonClient
 helpers = require './helpers'
 
-
-module.exports = class RepoManager
+class exports.RepoManager
 
     createLocalRepo: (appname, callback) ->
         console.log "Github repo created succesfully."
         cmds = []
-        cmds.push "git clone https://github.com/mycozycloud/cozy-template.git #{appname}"
+        repo = "https://github.com/mycozycloud/cozy-template.git #{appname}"
+        cmds.push "git clone #{repo}"
         cmds.push "cd #{appname} && git submodule update --init --recursive"
         cmds.push "cd #{appname} && rm -rf .git"
         cmds.push "cd #{appname} && npm install"
         cmds.push "cd #{appname}/client && npm install"
 
         console.log "Create new directory for your app"
-        helpers.executeUntilEmpty cmds, ->
+        helpers.execUntilEmpty cmds, ->
             console.log "Project directory created.".green
             callback()
 
@@ -30,7 +30,7 @@ module.exports = class RepoManager
         cmds.push "cd #{appname} && git add ."
         cmds.push "cd #{appname} && git commit -a -m \"first commit\""
         cmds.push "cd #{appname} && git push origin -u master"
-        helpers.executeUntilEmpty cmds, ->
+        helpers.execUntilEmpty cmds, ->
             console.log "Project linked to github repo.".green
             callback()
 

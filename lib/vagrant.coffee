@@ -8,16 +8,26 @@ helpers = require './helpers'
 class exports.VagrantManager
 
     constructor: ->
-        @baseBoxVersion = '0.1.0'
-        @baseBoxURL = 'https://www.cozycloud.cc/media/cozycloud-dev-'
-        @baseBoxURL = @baseBoxVersion + '.box'
+        @baseBoxURL = 'https://www.cozycloud.cc/media/cozycloud-dev-latest.box'
+
+        page = 'Setup-cozy-cloud-development-environment-via-a-virtual-machine'
+        @docURL = "https://github.com/mycozycloud/cozy-setup/wiki/#{page}"
+
+    checkIfVagrantIsInstalled: (callback) ->
+        exec "vagrant -v", (err, stdout, stderr) ->
+            if err
+                msg =  "Vagrant is required to use a virtual machine." + \
+                        "Please, refer to our documentation on #{docURL}"
+                console.log msg.red
+            else
+                callback()
 
     vagrantBoxAdd: (callback) ->
         cmds = []
         cmds.push
             name: 'vagrant'
             args: ['box', 'add', @baseBoxURL]
-        helpers.executeSynchronously cmds, ->
+        helpers.spawnUntilEmpty cmds, ->
             console.log "The base box has been added to your environment".green
             callback()
 
@@ -25,22 +35,22 @@ class exports.VagrantManager
         cmds = []
         cmds.push
             name: 'vagrant'
-            args: ['init', "cozy-dev-#{@baseBoxVersion}"]
-        helpers.executeSynchronously cmds, callback
+            args: ['init', "cozy-dev-latest"]
+        helpers.spawnUntilEmpty cmds, callback
 
     vagrantUp: (callback) ->
         cmds = []
         cmds.push
             name: 'vagrant'
             args: ['up']
-        helpers.executeSynchronously cmds, callback
+        helpers.spawnUntilEmpty cmds, callback
 
     vagrantHalt: (callback)  ->
         cmds = []
         cmds.push
             name: 'vagrant'
             args: ['halt']
-        helpers.executeSynchronously cmds, callback
+        helpers.spawnUntilEmpty cmds, callback
 
     virtualMachineStatus: ->
         @isServiceUp "Data System", "localhost", 9101
