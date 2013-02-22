@@ -29,7 +29,9 @@ class exports.VagrantManager
             name: 'vagrant'
             args: ['box', 'add', @baseBoxURL]
         helpers.spawnUntilEmpty cmds, ->
-            console.log "The base box has been added to your environment".green
+            msg = "The base box has been added to your environment or is " + \
+                  "already installed."
+            console.log msg.green
             callback()
 
     vagrantInit: (callback) ->

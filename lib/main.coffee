@@ -88,7 +88,7 @@ program
 
 program
     .command("deploy")
-    .description("Push code and deploy app located in current directory" + \
+    .description("Push code and deploy app located in current directory " + \
                  "to Cozy Cloud url configured in configuration file.")
     .action ->
         config = require(path.join(process.cwd(), "deploy_config")).config
@@ -98,7 +98,7 @@ program
 
 program
     .command("dev:init")
-    .description("Initialize the current folder to host a virtual machine" + \
+    .description("Initialize the current folder to host a virtual machine " + \
                  "with Vagrant. This will download the base box file.")
     .action ->
         console.log "Initializing the vritual machine in the folder..." + \
@@ -106,8 +106,9 @@ program
         vagrantManager.checkIfVagrantIsInstalled ->
             vagrantManager.vagrantBoxAdd ->
                 vagrantManager.vagrantInit ->
-                    console.log "The virtual machine has been successfully" + \
-                                "initialized.".green
+                    msg = "The virtual machine has been successfully " + \
+                          "initialized."
+                    console.log msg.green
 
 program
     .command("dev:start")
