@@ -12,7 +12,7 @@ Client::configure = (url, password, callback) ->
             callback()
 
 
-module.exports = class ApplicationManager
+class exports.ApplicationManager
 
     client: new Client ""
 

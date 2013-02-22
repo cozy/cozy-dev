@@ -13,16 +13,16 @@ Client::configure = (url, password, callback) ->
 
 client = new Client ""
 
-RepoManager = require('./repository')
+RepoManager = require('./repository').RepoManager
 repoManager = new RepoManager()
 
-ApplicationManager = require('./application')
+ApplicationManager = require('./application').ApplicationManager
 appManager = new ApplicationManager()
 
-ProjectManager = require('./project')
+ProjectManager = require('./project').ProjectManager
 projectManager = new ProjectManager()
 
-VagrantManager = require('./vagrant')
+VagrantManager = require('./vagrant').VagrantManager
 vagrantManager = new VagrantManager()
 
 ### Tasks ###
