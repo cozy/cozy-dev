@@ -15,10 +15,10 @@ class exports.VagrantManager
         @docURL = "https://github.com/mycozycloud/cozy-setup/wiki/#{page}"
 
     checkIfVagrantIsInstalled: (callback) ->
-        exec "vagrant -v", (err, stdout, stderr) ->
+        exec "vagrant -v", (err, stdout, stderr) =>
             if err
-                msg =  "Vagrant is required to use a virtual machine." + \
-                        "Please, refer to our documentation on #{docURL}"
+                msg =  "Vagrant is required to use a virtual machine. " + \
+                        "Please, refer to our documentation on #{@docURL}"
                 console.log msg.red
             else
                 callback()
