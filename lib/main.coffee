@@ -134,8 +134,8 @@ program
     .description("Tells which services of the VM are running and accessible.")
     .action ->
         vagrantManager.checkIfVagrantIsInstalled ->
-            vagrantManager.virtualMachineStatus()
-            console.log "All the tests have been done."
+            vagrantManager.virtualMachineStatus ->
+                console.log "All the tests have been done."
 
 program
     .command("*")

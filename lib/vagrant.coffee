@@ -53,11 +53,14 @@ class exports.VagrantManager
             args: ['halt']
         helpers.spawnUntilEmpty cmds, callback
 
-    virtualMachineStatus: ->
+    virtualMachineStatus: (callback) ->
         @isServiceUp "Data System", "localhost", 9101
         @isServiceUp "Cozy Proxy", "localhost", 9104
         @isServiceUp "Couchdb", "localhost", 5984
         @isServiceUp "Redis", "localhost", 6379
+
+        # we set a timeout so the log msg is always sent at the end
+        setTimeout(callback, 2000)
 
     isServiceUp: (service, domain, port) ->
         url = "http://#{domain}:#{port}"
@@ -65,3 +68,4 @@ class exports.VagrantManager
         client.get '/', (err, res, body) ->
             result = if err is null then "OK".green else "KO".red
             console.log "#{service} at #{url}........." + result
+
