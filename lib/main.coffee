@@ -103,7 +103,7 @@ program
     .action ->
         console.log "Initializing the vritual machine in the folder..." + \
                     "this may take a while."
-        vagrantManager.checkIfVagrantIsInstall ->
+        vagrantManager.checkIfVagrantIsInstalled ->
             vagrantManager.vagrantBoxAdd ->
                 vagrantManager.vagrantInit ->
                     console.log "The virtual machine has been successfully" + \
@@ -113,7 +113,7 @@ program
     .command("dev:start")
     .description("Starts the virtual machine with Vagrant.")
     .action ->
-        vagrantManager.checkIfVagrantIsInstall ->
+        vagrantManager.checkIfVagrantIsInstalled ->
             console.log "Starting the virtual machine...this may take a while."
             vagrantManager.vagrantUp ->
                 msg = "The virtual machine has been successfully started."
@@ -123,7 +123,7 @@ program
     .command("dev:stop")
     .description("Stops the Virtual machine with Vagrant.")
     .action ->
-        vagrantManager.checkIfVagrantIsInstall ->
+        vagrantManager.checkIfVagrantIsInstalled ->
             console.log "Stopping the virtual machine...this may take a while."
             vagrantManager.vagrantHalt ->
                 msg = "The virtual machine has been successfully stopped."
@@ -133,7 +133,7 @@ program
     .command("dev:vm-status")
     .description("Tells which services of the VM are running and accessible.")
     .action ->
-        vagrantManager.checkIfVagrantIsInstall ->
+        vagrantManager.checkIfVagrantIsInstalled ->
             vagrantManager.virtualMachineStatus()
             console.log "All the tests have been done."
 
