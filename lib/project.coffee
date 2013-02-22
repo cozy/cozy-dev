@@ -3,7 +3,7 @@ helpers = require './helpers'
 RepoManager = require('./repository').RepoManager
 ApplicationManager = require('./application').ApplicationManager
 
-module.exports = class ProjectManager
+class exports.ProjectManager
 
     repoManager: new RepoManager()
     appManager: new ApplicationManager()

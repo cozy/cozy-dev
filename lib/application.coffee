@@ -12,7 +12,7 @@ Client::configure = (url, password, callback) ->
             callback()
 
 
-module.exports = class ApplicationManager
+class exports.ApplicationManager
 
     client: new Client ""
 
@@ -34,7 +34,8 @@ module.exports = class ApplicationManager
         @client.configure url, password, =>
             path = "api/applications/#{app}/update"
             @client.put path, {}, (err, res, body) =>
-                @checkError err, res, body, 200, 'Update failed.'.red, callback
+                output = 'Update failed.'.red
+                @checkError err, res, body, 200, output, callback
 
     installApp: (app, url, repoUrl, password, callback) ->
         console.log "Install started for #{app}..."
@@ -45,14 +46,16 @@ module.exports = class ApplicationManager
 
             path = "api/applications/install"
             @client.post path, app_descriptor, (err, res, body) =>
-                @checkError err, res, body, 201, 'Install failed.'.red, callback
+                output = 'Install failed.'.red
+                @checkError err, res, body, 201, output, callback
 
     uninstallApp: (app, url, password, callback) ->
         console.log "Uninstall started for #{app}..."
         @client.configure url, password, =>
             path = "api/applications/#{app}/uninstall"
             @client.del path, (err, res, body) =>
-                @checkError err, res, body, 200, 'Uninstall failed.'.red, callback
+                output = 'Uninstall failed.'.red
+                @checkError err, res, body, 200, output, callback
 
     checkStatus: (url, password, callback) ->
         checkApp = (app) =>
