@@ -29,7 +29,8 @@
     "commander": "=1.0.5",
     "async": "=0.1.22",
     "request-json": "=0.3.0",
-    "colors": "=0.6.0-1"
+    "colors": "=0.6.0-1",
+    "redis": "=0.8.1"
   },
   "devDependencies": {
   },

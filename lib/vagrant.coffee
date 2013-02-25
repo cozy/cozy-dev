@@ -3,6 +3,7 @@ path = require 'path'
 fs = require 'fs'
 Client = require('request-json').JsonClient
 exec = require('child_process').exec
+redis = require 'redis'
 
 helpers = require './helpers'
 
@@ -59,7 +60,8 @@ class exports.VagrantManager
         @isServiceUp "Data System", "localhost", 9101
         @isServiceUp "Cozy Proxy", "localhost", 9104
         @isServiceUp "Couchdb", "localhost", 5984
-        @isServiceUp "Redis", "localhost", 6379
+        @isRedisUp "localhost", 6379
+
 
         # we set a timeout so the log msg is always sent at the end
         setTimeout(callback, 2000)
@@ -67,7 +69,25 @@ class exports.VagrantManager
     isServiceUp: (service, domain, port) ->
         url = "http://#{domain}:#{port}"
         client = new Client url
-        client.get '/', (err, res, body) ->
-            result = if err is null then "OK".green else "KO".red
-            console.log "#{service} at #{url}........." + result
+        client.get '/', (err, res, body) =>
+            @formatServiceUpOutput(service, url, err)
+
+    isRedisUp: (domain, port) ->
+        url = "http://#{domain}:#{port}"
+        client = redis.createClient 6379, 'localhost'
+
+        client.on "error", (err) =>
+            # prevent multiple tries
+            client.end()
+
+        client.send_command "PING", [], (err, resp) =>
+            if err?
+                @formatServiceUpOutput("Redis", url, err)
+            else
+                @formatServiceUpOutput("Redis", url, null)
+        client.quit()
+
+    formatServiceUpOutput: (service, url, err) ->
+        result = if err is null then "OK".green else "KO".red
+        console.log "#{service} at #{url}........." + result
 
