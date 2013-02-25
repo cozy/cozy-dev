@@ -1,37 +1,83 @@
 require 'colors'
 path = require 'path'
 fs = require 'fs'
-
 Client = require('request-json').JsonClient
 helpers = require './helpers'
 
 class exports.RepoManager
 
     createLocalRepo: (appname, callback) ->
-        console.log "Github repo created succesfully."
-        cmds = []
-        repo = "https://github.com/mycozycloud/cozy-template.git #{appname}"
-        cmds.push "git clone #{repo}"
-        cmds.push "cd #{appname} && git submodule update --init --recursive"
-        cmds.push "cd #{appname} && rm -rf .git"
-        cmds.push "cd #{appname} && npm install"
-        cmds.push "cd #{appname}/client && npm install"
 
-        console.log "Create new directory for your app"
-        helpers.execUntilEmpty cmds, ->
-            console.log "Project directory created.".green
+        cmds = []
+        repo = "https://github.com/mycozycloud/cozy-template.git"
+        appPath = "#{process.cwd()}/#{appname}"
+
+        cmds.push
+            name: "git"
+            args: ['clone', repo,  appname]
+            opts:
+                cwd: process.cwd()
+        cmds.push
+            name: "git"
+            args: ['submodule', 'update', '--init', '--recursive']
+            opts:
+                cwd: appPath
+        cmds.push
+            name: "rm"
+            args: ['-rf', '.git']
+            opts:
+                cwd: appPath
+        cmds.push
+            name: "npm"
+            args: ['install']
+            opts:
+                cwd: appPath
+        cmds.push
+            name: "npm"
+            args: ['install']
+            opts:
+                cwd: "#{appPath}/client"
+
+        console.log "Creating the project structure..."
+
+        helpers.spawnUntilEmpty cmds, ->
+            console.log "Project structure created.".green
             callback()
 
     connectRepos: (user, appname, callback) ->
         cmds = []
-        cmds.push "cd #{appname} && git init"
-        cmds.push "cd #{appname} && git remote add " + \
-            "origin git@github.com:#{user}/#{appname}.git"
-        cmds.push "cd #{appname} && git add ."
-        cmds.push "cd #{appname} && git commit -a -m \"first commit\""
-        cmds.push "cd #{appname} && git push origin -u master"
-        helpers.execUntilEmpty cmds, ->
-            console.log "Project linked to github repo.".green
+        appPath = "#{process.cwd()}/#{appname}"
+        cmds.push
+            name: "git"
+            args: ['init']
+            opts:
+                cwd: appPath
+        remoteRepository = "git@github.com:#{user}/#{appname}.git"
+        cmds.push
+            name: "git"
+            args: ['remote', 'add', 'origin', remoteRepository]
+            opts:
+                cwd: appPath
+        cmds.push
+            name: "git"
+            args: ['add', '.']
+            opts:
+                cwd: appPath
+        cmds.push
+            name: "git"
+            args: ['commit', '-a', '-m', '"First commit."']
+            opts:
+                cwd: appPath
+        cmds.push
+            name: "git"
+            args: ['push', 'origin', '-u', 'master']
+            opts:
+                cwd: appPath
+
+        helpers.spawnUntilEmpty cmds, ->
+            msg = "The project has been successfully linked to a Github " + \
+                  "repository."
+            console.log msg.green
             callback()
 
     createGithubRepo: (credentials, repo, callback) ->
