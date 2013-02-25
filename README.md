@@ -11,6 +11,20 @@ Add some features, then:
 
     cozy deploy
 
+# Managing your virtual machine
+
+The Cozy Manager helps you to manage a virtual machine through Vagrant.
+
+```
+cozy dev:init
+cozy dev:start
+
+cozy dev:stop
+```
+
+More information about CozyCloud and virtual machines on [[the documentation|https://github.com/mycozycloud/cozy-setup/wiki/Setup-cozy-cloud-development-environment-via-a-virtual-machine]].
+
+
 # About Cozy
 
 Cozy is a private pesronal cloud solution that allows you to host all your
