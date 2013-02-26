@@ -40,7 +40,18 @@ class exports.VagrantManager
         cmds.push
             name: 'vagrant'
             args: ['init', "cozy-dev-latest"]
-        helpers.spawnUntilEmpty cmds, callback
+        helpers.spawnUntilEmpty cmds, ->
+            url = "mycozycloud/cozy-setup/master/dev/Vagrantfile"
+            client = new Client "https://raw.github.com/"
+            client.saveFile url, './Vagrantfile', (err, res, body) ->
+
+                if err
+                    msg = "An error occurrend while retrieving the Vagrantfile"
+                    console.log msg.red
+                else
+                    console.log "Vagrantfile successfully upgraded".green
+
+                callback()
 
     vagrantUp: (callback) ->
         cmds = []
@@ -75,6 +86,12 @@ class exports.VagrantManager
     isRedisUp: (domain, port) ->
         url = "http://#{domain}:#{port}"
         client = redis.createClient 6379, 'localhost'
+
+        process.on 'uncaughtException', (err) ->
+            # Does nothing. Handles the fact that client.end() pops error out
+            # when redis is not started
+            if err.code isnt "ECONNREFUSED"
+                console.log err
 
         client.on "error", (err) =>
             # prevent multiple tries

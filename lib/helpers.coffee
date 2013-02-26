@@ -20,7 +20,8 @@ exports.execUntilEmpty = (commands, callback) ->
 exports.spawnUntilEmpty = (commands, callback) ->
     commandDescriptor = commands.shift()
 
-    command = spawn commandDescriptor.name, commandDescriptor.args
+    command = spawn(commandDescriptor.name, commandDescriptor.args,
+                    commandDescriptor.opts)
 
     command.stdout.on 'data',  (data) ->
         console.log "#{data}"
