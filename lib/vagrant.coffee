@@ -40,7 +40,18 @@ class exports.VagrantManager
         cmds.push
             name: 'vagrant'
             args: ['init', "cozy-dev-latest"]
-        helpers.spawnUntilEmpty cmds, callback
+        helpers.spawnUntilEmpty cmds, ->
+            url = "mycozycloud/cozy-setup/master/dev/Vagrantfile"
+            client = new Client "https://raw.github.com/"
+            client.saveFile url, './Vagrantfile', (err, res, body) ->
+
+                if err
+                    msg = "An error occurrend while retrieving the Vagrantfile"
+                    console.log msg.red
+                else
+                    console.log "Vagrantfile successfully upgraded".green
+
+                callback()
 
     vagrantUp: (callback) ->
         cmds = []
