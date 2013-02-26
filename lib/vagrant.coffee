@@ -76,6 +76,12 @@ class exports.VagrantManager
         url = "http://#{domain}:#{port}"
         client = redis.createClient 6379, 'localhost'
 
+        process.on 'uncaughtException', (err) ->
+            # Does nothing. Handles the fact that client.end() pops error out
+            # when redis is not started
+            if err.code isnt "ECONNREFUSED"
+                console.log err
+
         client.on "error", (err) =>
             # prevent multiple tries
             client.end()

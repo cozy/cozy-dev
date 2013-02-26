@@ -117,7 +117,9 @@ program
         vagrantManager.checkIfVagrantIsInstalled ->
             console.log "Starting the virtual machine...this may take a while."
             vagrantManager.vagrantUp ->
-                msg = "The virtual machine has been successfully started."
+                msg = "The virtual machine has been successfully started. " + \
+                      "You can check everything is working by running " + \
+                      "cozy dev:vm-status"
                 console.log msg.green
 
 program
