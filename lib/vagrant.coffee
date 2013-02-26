@@ -79,6 +79,8 @@ class exports.VagrantManager
         process.on 'uncaughtException', (err) ->
             # Does nothing. Handles the fact that client.end() pops error out
             # when redis is not started
+            if err.code isnt "ECONNREFUSED"
+                console.log err
 
         client.on "error", (err) =>
             # prevent multiple tries
