@@ -10,7 +10,7 @@ helpers = require './helpers'
 class exports.VagrantManager
 
     constructor: ->
-        @baseBoxURL = 'https://www.cozycloud.cc/media/cozycloud-dev-latest.box'
+        @baseBoxURL = 'http://files.cozycloud.cc/cozycloud-dev-latest.box'
 
         page = 'Setup-cozy-cloud-development-environment-via-a-virtual-machine'
         @docURL = "https://github.com/mycozycloud/cozy-setup/wiki/#{page}"
@@ -28,7 +28,7 @@ class exports.VagrantManager
         cmds = []
         cmds.push
             name: 'vagrant'
-            args: ['box', 'add', @baseBoxURL]
+            args: ['box', 'add', 'cozycloud-dev-latest', @baseBoxURL]
         helpers.spawnUntilEmpty cmds, ->
             msg = "The base box has been added to your environment or is " + \
                   "already installed."
@@ -68,22 +68,21 @@ class exports.VagrantManager
         helpers.spawnUntilEmpty cmds, callback
 
     virtualMachineStatus: (callback) ->
-        @isServiceUp "Data System", "localhost", 9101
-        @isServiceUp "Cozy Proxy", "localhost", 9104
-        @isServiceUp "Couchdb", "localhost", 5984
-        @isRedisUp "localhost", 6379
+        @isServiceUp "Data System", "localhost", 9101, =>
+            @isServiceUp "Cozy Proxy", "localhost", 9104, =>
+                @isServiceUp "Couchdb", "localhost", 5984, =>
+                    @isRedisUp "localhost", 6379, =>
+                        setTimeout(callback, 2000)
 
 
-        # we set a timeout so the log msg is always sent at the end
-        setTimeout(callback, 2000)
-
-    isServiceUp: (service, domain, port) ->
+    isServiceUp: (service, domain, port, callback) ->
         url = "http://#{domain}:#{port}"
         client = new Client url
         client.get '/', (err, res, body) =>
             @formatServiceUpOutput(service, url, err)
+            callback()
 
-    isRedisUp: (domain, port) ->
+    isRedisUp: (domain, port, callback) ->
         url = "http://#{domain}:#{port}"
         client = redis.createClient 6379, 'localhost'
 
@@ -92,19 +91,21 @@ class exports.VagrantManager
             # when redis is not started
             if err.code isnt "ECONNREFUSED"
                 console.log err
+            callback()
 
         client.on "error", (err) =>
             # prevent multiple tries
             client.end()
+            callback()
 
         client.send_command "PING", [], (err, resp) =>
             if err?
                 @formatServiceUpOutput("Redis", url, err)
             else
                 @formatServiceUpOutput("Redis", url, null)
+            callback()
         client.quit()
 
     formatServiceUpOutput: (service, url, err) ->
         result = if err is null then "OK".green else "KO".red
         console.log "#{service} at #{url}........." + result
-
