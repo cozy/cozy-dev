@@ -28,7 +28,7 @@ vagrantManager = new VagrantManager()
 ### Tasks ###
 
 program
-    .version('0.2.0')
+    .version('0.3.1')
     .option('-u, --url <url>',
             'set url where lives your Cozy Cloud, default to localhost')
     .option('-g, --github <github>',
