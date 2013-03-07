@@ -22,6 +22,12 @@ exports.spawnUntilEmpty = (commands, callback) ->
 
     command = spawn(commandDescriptor.name, commandDescriptor.args,
                     commandDescriptor.opts)
+                    
+    if os.platform().match /^win/
+        name = commandDescriptor.name
+        commandDescriptor.name = "cmd"
+        commandDescriptor.args.unshift(name)
+        commandDescriptor.args.unshift('/C')
 
     command.stdout.on 'data',  (data) ->
         console.log "#{data}"
