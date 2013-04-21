@@ -22,7 +22,7 @@ cozy dev:start
 cozy dev:stop
 ```
 
-More information about CozyCloud and virtual machines on [[the documentation|https://github.com/mycozycloud/cozy-setup/wiki/Setup-cozy-cloud-development-environment-via-a-virtual-machine]].
+More information about CozyCloud and virtual machines in [the documentation](https://github.com/mycozycloud/cozy-setup/wiki/Setup-cozy-cloud-development-environment-via-a-virtual-machine).
 
 
 # About Cozy
