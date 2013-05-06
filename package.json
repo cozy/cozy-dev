@@ -1,6 +1,6 @@
 {
   "name": "cozy",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Tools to start and deploy Cozy applications easily",
   "license": "LGPL v3",
   "main": "./lib/main",
@@ -32,7 +32,6 @@
     "colors": "=0.6.0-1",
     "redis": "=0.8.1"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "author": "Cozy Cloud"
 }
