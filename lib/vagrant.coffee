@@ -22,7 +22,7 @@ class exports.VagrantManager
                         "Please, refer to our documentation on #{@docURL}"
                 console.log msg.red
             else
-                callback()
+                callback() if callback?
 
     vagrantBoxAdd: (callback) ->
         cmds = []
@@ -33,7 +33,7 @@ class exports.VagrantManager
             msg = "The base box has been added to your environment or is " + \
                   "already installed."
             console.log msg.green
-            callback()
+            callback() if callback?
 
     vagrantInit: (callback) ->
         cmds = []
@@ -86,7 +86,7 @@ class exports.VagrantManager
             else
                 console.log "Vagrantfile successfully upgraded.".green
 
-            callback()
+            callback() if callback?
 
     virtualMachineStatus: (callback) ->
         @isServiceUp "Data System", "localhost", 9101, =>
@@ -101,7 +101,7 @@ class exports.VagrantManager
         client = new Client url
         client.get '/', (err, res, body) =>
             @formatServiceUpOutput(service, url, err)
-            callback()
+            callback() if callback?
 
     isRedisUp: (domain, port, callback) ->
         url = "http://#{domain}:#{port}"
@@ -112,19 +112,19 @@ class exports.VagrantManager
             # when redis is not started
             if err.code isnt "ECONNREFUSED"
                 console.log err
-            callback()
+            callback() if callback?
 
         client.on "error", (err) =>
             # prevent multiple tries
             client.end()
-            callback()
+            callback() if callback?
 
         client.send_command "PING", [], (err, resp) =>
             if err?
                 @formatServiceUpOutput("Redis", url, err)
             else
                 @formatServiceUpOutput("Redis", url, null)
-            callback()
+            callback() if callback?
         client.quit()
 
     formatServiceUpOutput: (service, url, err) ->
