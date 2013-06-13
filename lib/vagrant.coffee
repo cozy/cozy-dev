@@ -92,9 +92,7 @@ class exports.VagrantManager
         @isServiceUp "Data System", "localhost", 9101, =>
             @isServiceUp "Cozy Proxy", "localhost", 9104, =>
                 @isServiceUp "Couchdb", "localhost", 5984, =>
-                    @isRedisUp "localhost", 6379, =>
-                        setTimeout(callback, 2000)
-
+                    setTimeout(callback, 2000)
 
     isServiceUp: (service, domain, port, callback) ->
         url = "http://#{domain}:#{port}"
@@ -102,30 +100,6 @@ class exports.VagrantManager
         client.get '/', (err, res, body) =>
             @formatServiceUpOutput(service, url, err)
             callback() if callback?
-
-    isRedisUp: (domain, port, callback) ->
-        url = "http://#{domain}:#{port}"
-        client = redis.createClient 6379, 'localhost'
-
-        process.on 'uncaughtException', (err) ->
-            # Does nothing. Handles the fact that client.end() pops error out
-            # when redis is not started
-            if err.code isnt "ECONNREFUSED"
-                console.log err
-            callback() if callback?
-
-        client.on "error", (err) =>
-            # prevent multiple tries
-            client.end()
-            callback() if callback?
-
-        client.send_command "PING", [], (err, resp) =>
-            if err?
-                @formatServiceUpOutput("Redis", url, err)
-            else
-                @formatServiceUpOutput("Redis", url, null)
-            callback() if callback?
-        client.quit()
 
     formatServiceUpOutput: (service, url, err) ->
         result = if err is null then "OK".green else "KO".red
