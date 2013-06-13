@@ -141,6 +141,15 @@ program
                 console.log "All the tests have been done."
 
 program
+    .command("dev:light-update")
+    .description("Updates the virtual machine with the latest version of " + \
+                "the PaaS")
+    .action ->
+        vagrantManager.checkIfVagrantIsInstalled ->
+            vagrantManager.lightUpdate ->
+                console.log "VM updated.".green
+
+program
     .command("*")
     .description("Display error message for an unknown command.")
     .action ->

@@ -40,18 +40,9 @@ class exports.VagrantManager
         cmds.push
             name: 'vagrant'
             args: ['init', "cozy-dev-latest"]
-        helpers.spawnUntilEmpty cmds, ->
-            url = "mycozycloud/cozy-setup/master/dev/Vagrantfile"
-            client = new Client "https://raw.github.com/"
-            client.saveFile url, './Vagrantfile', (err, res, body) ->
+        helpers.spawnUntilEmpty cmds, =>
+            @importVagrantFile callback
 
-                if err
-                    msg = "An error occurrend while retrieving the Vagrantfile"
-                    console.log msg.red
-                else
-                    console.log "Vagrantfile successfully upgraded".green
-
-                callback()
 
     vagrantUp: (callback) ->
         cmds = []
@@ -66,6 +57,36 @@ class exports.VagrantManager
             name: 'vagrant'
             args: ['halt']
         helpers.spawnUntilEmpty cmds, callback
+
+    lightUpdate: (callback) ->
+        cmds = []
+        cmds.push
+            name: 'vagrant'
+            args: ['ssh', '-c', '"rm -rf ~/update-devenv.sh"']
+        scriptUrl = "https://raw.github.com/mycozycloud/cozy-setup/master/" + \
+                                                       "dev/update-devenv.sh"
+        cmds.push
+            name: 'vagrant ssh'
+            args: ['-c', '"curl -Of ' + scriptUrl + '"']
+        cmds.push
+            name: 'vagrant'
+            args: ['ssh', '-c', '"~/update-devenv.sh"']
+
+        @importVagrantFile () ->
+            helpers.spawnUntilEmpty cmds, callback
+
+    importVagrantFile: (callback) ->
+        console.log "Importing latest Vagrantfile version..."
+        url = "mycozycloud/cozy-setup/master/dev/Vagrantfile"
+        client = new Client "https://raw.github.com/"
+        client.saveFile url, './Vagrantfile', (err, res, body) ->
+            if err
+                msg = "An error occurrend while retrieving the Vagrantfile."
+                console.log msg.red
+            else
+                console.log "Vagrantfile successfully upgraded.".green
+
+            callback()
 
     virtualMachineStatus: (callback) ->
         @isServiceUp "Data System", "localhost", 9101, =>
