@@ -1,5 +1,6 @@
 exec = require('child_process').exec
 spawn = require('child_process').spawn
+util = require 'util'
 
 
 # Execute sequentially given shell commands with "exec"
@@ -24,10 +25,10 @@ exports.spawnUntilEmpty = (commands, callback) ->
                     commandDescriptor.opts)
 
     command.stdout.on 'data',  (data) ->
-        console.log "#{data}"
+        util.print "#{data}"
 
     command.stderr.on 'data', (data) ->
-        console.log "#{data}"
+        util.print "#{data}"
 
     command.on 'exit', (code) ->
         if commands.length > 0
