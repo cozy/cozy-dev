@@ -3,7 +3,6 @@ path = require 'path'
 fs = require 'fs'
 Client = require('request-json').JsonClient
 exec = require('child_process').exec
-redis = require 'redis'
 
 helpers = require './helpers'
 
