@@ -26,7 +26,6 @@ VagrantManager = require('./vagrant').VagrantManager
 vagrantManager = new VagrantManager()
 
 ### Tasks ###
-
 program
     .version('0.3.1')
     .option('-u, --url <url>',
@@ -122,13 +121,22 @@ program
                       "cozy dev:vm-status"
                 console.log msg.green
 
+haltOption = "Properly stop the virtual machine instead of simply " + \
+             "suspending its execution"
 program
     .command("dev:stop")
+    .option("-H, --halt", haltOption)
     .description("Stops the Virtual machine with Vagrant.")
     .action ->
-        vagrantManager.checkIfVagrantIsInstalled ->
+        option = @args[0].halt
+        vagrantManager.checkIfVagrantIsInstalled =>
             console.log "Stopping the virtual machine...this may take a while."
-            vagrantManager.vagrantHalt ->
+            if option? and option
+                caller = vagrantManager.vagrantHalt
+            else
+                caller = vagrantManager.vagrantSuspend
+
+            caller ->
                 msg = "The virtual machine has been successfully stopped."
                 console.log msg.green
 

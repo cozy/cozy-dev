@@ -42,7 +42,8 @@ class exports.VagrantManager
         helpers.spawnUntilEmpty cmds, =>
             @importVagrantFile callback
 
-
+    # perform "up" if the vm has been "halt"
+    # perform "resume" if the VM has been "suspend"
     vagrantUp: (callback) ->
         cmds = []
         cmds.push
@@ -55,6 +56,13 @@ class exports.VagrantManager
         cmds.push
             name: 'vagrant'
             args: ['halt']
+        helpers.spawnUntilEmpty cmds, callback
+
+    vagrantSuspend: (callback)  ->
+        cmds = []
+        cmds.push
+            name: 'vagrant'
+            args: ['suspend']
         helpers.spawnUntilEmpty cmds, callback
 
     lightUpdate: (callback) ->
