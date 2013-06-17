@@ -25,9 +25,11 @@ projectManager = new ProjectManager()
 VagrantManager = require('./vagrant').VagrantManager
 vagrantManager = new VagrantManager()
 
+helpers = require './helpers'
+
 ### Tasks ###
 program
-    .version('0.3.5')
+    .version('0.3.6')
     .option('-u, --url <url>',
             'set url where lives your Cozy Cloud, default to localhost')
     .option('-g, --github <github>',
@@ -110,6 +112,23 @@ program
                     console.log msg.green
 
 program
+    .command("dev:destroy")
+    .description("Destroy the virtual machine. Data will be lost.")
+    .action ->
+        confirmMessage = "You are about to remove the virtual machine from " + \
+                         "your computer. All data will be lost and a new " + \
+                         "import will be required if you want to use the " + \
+                         "VM again. [y/n]"
+        program.confirm confirmMessage, (ok) ->
+            if ok
+                vagrantManager.vagrantBoxDestroy ->
+                    msg = "The box has been sucessfully destroyed. Use " + \
+                            "cozy dev:init to be able to use the VM again."
+                    console.log msg.green
+                    # dirty fix because program.confirm seems to be buggy
+                    process.exit()
+
+program
     .command("dev:start")
     .description("Starts the virtual machine with Vagrant.")
     .action ->
@@ -151,7 +170,7 @@ program
 program
     .command("dev:light-update")
     .description("Updates the virtual machine with the latest version of " + \
-                "the PaaS")
+                "the cozy PaaS and core applications")
     .action ->
         vagrantManager.checkIfVagrantIsInstalled ->
             vagrantManager.lightUpdate ->

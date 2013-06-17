@@ -1,6 +1,6 @@
 {
   "name": "cozy",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "author": "Cozycloud <contact@cozycloud.cc>",
   "description": "Tools to start and deploy Cozy applications easily",
   "license": "LGPL v3",
@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "coffee-script": "~1.4.0",
-    "commander": "=1.0.5",
+    "commander": "=1.2.0",
     "async": "=0.1.22",
     "request-json": "=0.3.4",
     "colors": "=0.6.0-1"
