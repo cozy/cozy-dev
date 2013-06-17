@@ -42,6 +42,19 @@ class exports.VagrantManager
         helpers.spawnUntilEmpty cmds, =>
             @importVagrantFile callback
 
+    vagrantBoxDestroy: (callback) ->
+        cmds = []
+        cmds.push
+            name: 'vagrant'
+            args: ['--force', 'destroy']
+        cmds.push
+            name: 'vagrant'
+            args: ['box', 'remove', 'cozycloud-dev-latest']
+        cmds.push
+            name: 'rm'
+            args: ['-rf', 'Vagrantfile']
+        helpers.spawnUntilEmpty cmds, callback
+
     # perform "up" if the vm has been "halt"
     # perform "resume" if the VM has been "suspend"
     vagrantUp: (callback) ->
