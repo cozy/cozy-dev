@@ -1,5 +1,6 @@
 exec = require('child_process').exec
 spawn = require('child_process').spawn
+os = require 'os'
 util = require 'util'
 
 
@@ -20,19 +21,25 @@ exports.execUntilEmpty = (commands, callback) ->
 # until there is no more command left. Spawn displays the output as it comes.
 exports.spawnUntilEmpty = (commands, callback) ->
     commandDescriptor = commands.shift()
+    if os.platform().match /^win/
+        name = commandDescriptor.name
+        commandDescriptor.name = "cmd"
+        commandDescriptor.args.unshift(name)
+        commandDescriptor.args.unshift('/C')
 
     command = spawn(commandDescriptor.name, commandDescriptor.args,
                     commandDescriptor.opts)
-
     command.stdout.on 'data',  (data) ->
         util.print "#{data}"
 
     command.stderr.on 'data', (data) ->
         util.print "#{data}"
 
-    command.on 'exit', (code) ->
-        if commands.length > 0
+
+    stopProcess = (code, signal) ->
+        if commands.length > 0 and code is 0
             exports.spawnUntilEmpty commands, callback
         else
-            callback()
+            callback(code)
+    command.on 'close', stopProcess
 

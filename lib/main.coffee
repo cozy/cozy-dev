@@ -29,7 +29,7 @@ helpers = require './helpers'
 
 ### Tasks ###
 program
-    .version('0.3.6')
+    .version('0.3.7')
     .option('-u, --url <url>',
             'set url where lives your Cozy Cloud, default to localhost')
     .option('-g, --github <github>',
@@ -134,11 +134,15 @@ program
     .action ->
         vagrantManager.checkIfVagrantIsInstalled ->
             console.log "Starting the virtual machine...this may take a while."
-            vagrantManager.vagrantUp ->
-                msg = "The virtual machine has been successfully started. " + \
-                      "You can check everything is working by running " + \
-                      "cozy dev:vm-status"
-                console.log msg.green
+            vagrantManager.vagrantUp (code) ->
+                if code is 0
+                    msg = "The virtual machine has been successfully " + \
+                          "started. You can check everything is working " + \
+                          "by running cozy dev:vm-status."
+                    console.log msg.green
+                else
+                    msg = "An error occurred while your VMs was starting."
+                    console.log msg.red
 
 haltOption = "Properly stop the virtual machine instead of simply " + \
              "suspending its execution"
@@ -155,17 +159,24 @@ program
             else
                 caller = vagrantManager.vagrantSuspend
 
-            caller ->
-                msg = "The virtual machine has been successfully stopped."
-                console.log msg.green
-
+            caller (code) ->
+                if code is 0
+                    msg = "The virtual machine has been successfully stopped."
+                    console.log msg.green
+                else
+                    msg = "An error occurred while your VMs was shutting down."
+                    console.log msg.red
 program
     .command("dev:vm-status")
     .description("Tells which services of the VM are running and accessible.")
     .action ->
         vagrantManager.checkIfVagrantIsInstalled ->
-            vagrantManager.virtualMachineStatus ->
-                console.log "All the tests have been done."
+            vagrantManager.virtualMachineStatus (code) ->
+                if code is 0
+                    msg = "All the core services are up and running."
+                    console.log msg.green
+                else
+                    console.log "One or more services are not running.".red
 
 program
     .command("dev:light-update")
