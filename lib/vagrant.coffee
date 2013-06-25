@@ -109,18 +109,19 @@ class exports.VagrantManager
             callback() if callback?
 
     virtualMachineStatus: (callback) ->
-        @isServiceUp "Data System", "localhost", 9101, =>
-            @isServiceUp "Cozy Proxy", "localhost", 9104, =>
-                @isServiceUp "Couchdb", "localhost", 5984, =>
-                    setTimeout(callback, 2000)
-
-    isServiceUp: (service, domain, port, callback) ->
-        url = "http://#{domain}:#{port}"
+        url = "http://localhost:9104"
+        console.log "Checking status on #{url}..."
         client = new Client url
-        client.get '/', (err, res, body) =>
-            @formatServiceUpOutput(service, url, err)
-            callback() if callback?
-
-    formatServiceUpOutput: (service, url, err) ->
-        result = if err is null then "OK".green else "KO".red
-        console.log "#{service} at #{url}........." + result
+        client.get '/status', (err, res, body) ->
+            if err
+                callback(1)
+            else
+                isOkay = 0
+                for app, status of body
+                    if status is true
+                        formattedStatus = "running".green
+                    else
+                        formattedStatus = "stopped".red
+                        isOkay = 1
+                    console.log "\t* #{app}: #{formattedStatus}"
+                callback(isOkay)
