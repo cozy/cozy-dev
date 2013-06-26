@@ -29,7 +29,7 @@ helpers = require './helpers'
 
 ### Tasks ###
 program
-    .version('0.3.7')
+    .version('0.3.8')
     .option('-u, --url <url>',
             'set url where lives your Cozy Cloud, default to localhost')
     .option('-g, --github <github>',
