@@ -8,14 +8,14 @@ util = require 'util'
 # until there is no more command left. Exec displays the output at the end.
 exports.execUntilEmpty = (commands, callback) ->
     command = commands.shift()
-
     exec command, (err, stdout, stderr) ->
         if err
             console.log stderr
+            callback(err.code)
         else if commands.length > 0
             exports.execUntilEmpty commands, callback
         else
-            callback()
+            callback(0)
 
 # Execute sequentially given shell commands with "spawn"
 # until there is no more command left. Spawn displays the output as it comes.
@@ -35,11 +35,9 @@ exports.spawnUntilEmpty = (commands, callback) ->
     command.stderr.on 'data', (data) ->
         util.print "#{data}"
 
-
-    stopProcess = (code, signal) ->
+    command.on 'close', (code, signal) ->
         if commands.length > 0 and code is 0
             exports.spawnUntilEmpty commands, callback
         else
             callback(code)
-    command.on 'close', stopProcess
 
