@@ -184,8 +184,11 @@ program
                 "the cozy PaaS and core applications")
     .action ->
         vagrantManager.checkIfVagrantIsInstalled ->
-            vagrantManager.lightUpdate ->
-                console.log "VM updated.".green
+            vagrantManager.lightUpdate (code) ->
+                if code is 0
+                    console.log "VM updated.".green
+                else
+                    console.log "An error occurred while updating the VM".red
 
 program
     .command("*")

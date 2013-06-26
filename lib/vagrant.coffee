@@ -79,18 +79,24 @@ class exports.VagrantManager
         helpers.spawnUntilEmpty cmds, callback
 
     lightUpdate: (callback) ->
+        console.log "Patching the updater and updating the VM..." + \
+                    "This may take a while..."
         cmds = []
         cmds.push
             name: 'vagrant'
-            args: ['ssh', '-c', '"rm -rf ~/update-devenv.sh"']
+            args: ['ssh', '-c', 'rm -rf ~/update-devenv.sh']
+
         scriptUrl = "https://raw.github.com/mycozycloud/cozy-setup/master/" + \
                                                        "dev/update-devenv.sh"
         cmds.push
-            name: 'vagrant ssh'
-            args: ['-c', '"curl -Of ' + scriptUrl + '"']
+            name: 'vagrant'
+            args: ['ssh', '-c', 'curl -Of ' + scriptUrl ]
         cmds.push
             name: 'vagrant'
-            args: ['ssh', '-c', '"~/update-devenv.sh"']
+            args: ['ssh', '-c', 'chmod u+x ~/update-devenv.sh']
+        cmds.push
+            name: 'vagrant'
+            args: ['ssh', '-c', '~/update-devenv.sh']
 
         @importVagrantFile () ->
             helpers.spawnUntilEmpty cmds, callback
