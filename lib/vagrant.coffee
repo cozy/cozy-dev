@@ -119,9 +119,9 @@ class exports.VagrantManager
                 isOkay = 0
                 for app, status of body
                     if status is true
-                        formattedStatus = "running".green
+                        formattedStatus = "ok".green
                     else
-                        formattedStatus = "stopped".red
-                        isOkay = 1
+                        formattedStatus = "ko".red
+                        isOkay = 1 if app isnt "registered"
                     console.log "\t* #{app}: #{formattedStatus}"
                 callback(isOkay)
