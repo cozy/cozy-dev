@@ -3,7 +3,6 @@ spawn = require('child_process').spawn
 os = require 'os'
 util = require 'util'
 
-
 # Execute sequentially given shell commands with "exec"
 # until there is no more command left. Exec displays the output at the end.
 exports.execUntilEmpty = (commands, callback) ->
@@ -21,7 +20,7 @@ exports.execUntilEmpty = (commands, callback) ->
 # until there is no more command left. Spawn displays the output as it comes.
 exports.spawnUntilEmpty = (commands, callback) ->
     commandDescriptor = commands.shift()
-    if os.platform().match /^win/
+    if exports.isRunningOnWindows()
         name = commandDescriptor.name
         commandDescriptor.name = "cmd"
         commandDescriptor.args.unshift(name)
@@ -41,3 +40,5 @@ exports.spawnUntilEmpty = (commands, callback) ->
         else
             callback(code)
 
+exports.isRunningOnWindows = ->
+    return os.platform().match /^win/
