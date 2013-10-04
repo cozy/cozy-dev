@@ -11,8 +11,7 @@ class exports.VagrantManager
     constructor: ->
         @baseBoxURL = 'http://files.cozycloud.cc/cozycloud-dev-latest.box'
 
-        page = 'Setup-cozy-cloud-development-environment-via-a-virtual-machine'
-        @docURL = "https://github.com/mycozycloud/cozy-setup/wiki/#{page}"
+        @docURL = "http://cozy.io/hack/getting-started/setup-environment.html"
 
     checkIfVagrantIsInstalled: (callback) ->
         exec "vagrant -v", (err, stdout, stderr) =>
