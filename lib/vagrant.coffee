@@ -11,8 +11,7 @@ class exports.VagrantManager
     constructor: ->
         @baseBoxURL = 'http://files.cozycloud.cc/cozycloud-dev-latest.box'
 
-        page = 'Setup-cozy-cloud-development-environment-via-a-virtual-machine'
-        @docURL = "https://github.com/mycozycloud/cozy-setup/wiki/#{page}"
+        @docURL = "http://cozy.io/hack/getting-started/setup-environment.html"
 
     checkIfVagrantIsInstalled: (callback) ->
         exec "vagrant -v", (err, stdout, stderr) =>
@@ -79,18 +78,24 @@ class exports.VagrantManager
         helpers.spawnUntilEmpty cmds, callback
 
     lightUpdate: (callback) ->
+        console.log "Patching the updater and updating the VM..." + \
+                    "This may take a while..."
         cmds = []
         cmds.push
             name: 'vagrant'
-            args: ['ssh', '-c', '"rm -rf ~/update-devenv.sh"']
+            args: ['ssh', '-c', 'rm -rf ~/update-devenv.sh']
+
         scriptUrl = "https://raw.github.com/mycozycloud/cozy-setup/master/" + \
                                                        "dev/update-devenv.sh"
         cmds.push
-            name: 'vagrant ssh'
-            args: ['-c', '"curl -Of ' + scriptUrl + '"']
+            name: 'vagrant'
+            args: ['ssh', '-c', 'curl -Of ' + scriptUrl ]
         cmds.push
             name: 'vagrant'
-            args: ['ssh', '-c', '"~/update-devenv.sh"']
+            args: ['ssh', '-c', 'chmod u+x ~/update-devenv.sh']
+        cmds.push
+            name: 'vagrant'
+            args: ['ssh', '-c', '~/update-devenv.sh']
 
         @importVagrantFile () ->
             helpers.spawnUntilEmpty cmds, callback
@@ -109,18 +114,19 @@ class exports.VagrantManager
             callback() if callback?
 
     virtualMachineStatus: (callback) ->
-        @isServiceUp "Data System", "localhost", 9101, =>
-            @isServiceUp "Cozy Proxy", "localhost", 9104, =>
-                @isServiceUp "Couchdb", "localhost", 5984, =>
-                    setTimeout(callback, 2000)
-
-    isServiceUp: (service, domain, port, callback) ->
-        url = "http://#{domain}:#{port}"
+        url = "http://localhost:9104"
+        console.log "Checking status on #{url}..."
         client = new Client url
-        client.get '/', (err, res, body) =>
-            @formatServiceUpOutput(service, url, err)
-            callback() if callback?
-
-    formatServiceUpOutput: (service, url, err) ->
-        result = if err is null then "OK".green else "KO".red
-        console.log "#{service} at #{url}........." + result
+        client.get '/status', (err, res, body) ->
+            if err
+                callback(1)
+            else
+                isOkay = 0
+                for app, status of body
+                    if status is true
+                        formattedStatus = "ok".green
+                    else
+                        formattedStatus = "ko".red
+                        isOkay = 1 if app isnt "registered"
+                    console.log "\t* #{app}: #{formattedStatus}"
+                callback(isOkay)

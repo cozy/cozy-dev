@@ -8,13 +8,13 @@ class exports.ProjectManager
     repoManager: new RepoManager()
     appManager: new ApplicationManager()
 
-    newProject: (name, url, user, password, callback) ->
+    newProject: (name, isCoffee, url, user, password, callback) ->
         credentials =
             password: password
             username: user
 
         @repoManager.createGithubRepo credentials, name, =>
-            @repoManager.createLocalRepo name, =>
+            @repoManager.createLocalRepo name, isCoffee, =>
                 @repoManager.connectRepos user, name, =>
                     @repoManager.saveConfig user, name, url, ->
                         callback()

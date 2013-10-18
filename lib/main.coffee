@@ -15,26 +15,24 @@ client = new Client ""
 
 RepoManager = require('./repository').RepoManager
 repoManager = new RepoManager()
-
-ApplicationManager = require('./application').ApplicationManager
-appManager = new ApplicationManager()
-
-ProjectManager = require('./project').ProjectManager
+ApplicationManager = new require('./application').ApplicationManager
+applicationManager = new ApplicationManager()
+ProjectManager = new require('./project').ProjectManager
 projectManager = new ProjectManager()
-
-VagrantManager = require('./vagrant').VagrantManager
+VagrantManager = new require('./vagrant').VagrantManager
 vagrantManager = new VagrantManager()
 
 helpers = require './helpers'
 
 ### Tasks ###
 program
-    .version('0.3.6')
+    .version('0.3.10')
     .option('-u, --url <url>',
             'set url where lives your Cozy Cloud, default to localhost')
     .option('-g, --github <github>',
             'Link new project to github account')
-
+    .option('-c, --coffee',
+            'Create app template with coffee script files instead of JS files')
 
 program
     .command("install <app> <repo>")
@@ -74,17 +72,20 @@ program
     .description("Create a new app suited to be deployed on a Cozy Cloud.")
     .action (appname) ->
         user = program.github
+        isCoffee = program.coffee
 
         if user?
             console.log "Create repo #{appname} for user #{user}..."
             program.password "Github password:", (password) =>
                 program.prompt "Cozy Url:", (url) ->
-                    projectManager.newProject appname, url, user, password, ->
+                    projectManager.newProject(appname, isCoffee, \
+                                              url, user, password, ->
                         console.log "Project creation finished.".green
                         process.exit 0
+                    )
         else
             console.log "Create project folder: #{appname}"
-            repoManager.createLocalRepo appname, ->
+            repoManager.createLocalRepo appname, isCoffee, ->
                 console.log "Project creation finished.".green
 
 program
@@ -92,7 +93,7 @@ program
     .description("Push code and deploy app located in current directory " + \
                  "to Cozy Cloud url configured in configuration file.")
     .action ->
-        config = require(path.join(process.cwd(), "deploy_config")).config
+        config = require(path.join(process.cwd(), ".cozy_conf.json"))
         program.password "Cozy password:", (password) ->
             projectManager.deploy config, password, ->
                 console.log "#{config.cozy.appName} sucessfully deployed.".green
@@ -102,7 +103,7 @@ program
     .description("Initialize the current folder to host a virtual machine " + \
                  "with Vagrant. This will download the base box file.")
     .action ->
-        console.log "Initializing the vritual machine in the folder..." + \
+        console.log "Initializing the virtual machine in the folder..." + \
                     "this may take a while."
         vagrantManager.checkIfVagrantIsInstalled ->
             vagrantManager.vagrantBoxAdd ->
@@ -134,11 +135,15 @@ program
     .action ->
         vagrantManager.checkIfVagrantIsInstalled ->
             console.log "Starting the virtual machine...this may take a while."
-            vagrantManager.vagrantUp ->
-                msg = "The virtual machine has been successfully started. " + \
-                      "You can check everything is working by running " + \
-                      "cozy dev:vm-status"
-                console.log msg.green
+            vagrantManager.vagrantUp (code) ->
+                if code is 0
+                    msg = "The virtual machine has been successfully " + \
+                          "started. You can check everything is working " + \
+                          "by running cozy dev:vm-status."
+                    console.log msg.green
+                else
+                    msg = "An error occurred while your VMs was starting."
+                    console.log msg.red
 
 haltOption = "Properly stop the virtual machine instead of simply " + \
              "suspending its execution"
@@ -155,17 +160,24 @@ program
             else
                 caller = vagrantManager.vagrantSuspend
 
-            caller ->
-                msg = "The virtual machine has been successfully stopped."
-                console.log msg.green
-
+            caller (code) ->
+                if code is 0
+                    msg = "The virtual machine has been successfully stopped."
+                    console.log msg.green
+                else
+                    msg = "An error occurred while your VMs was shutting down."
+                    console.log msg.red
 program
     .command("dev:vm-status")
     .description("Tells which services of the VM are running and accessible.")
     .action ->
         vagrantManager.checkIfVagrantIsInstalled ->
-            vagrantManager.virtualMachineStatus ->
-                console.log "All the tests have been done."
+            vagrantManager.virtualMachineStatus (code) ->
+                if code is 0
+                    msg = "All the core services are up and running."
+                    console.log msg.green
+                else
+                    console.log "One or more services are not running.".red
 
 program
     .command("dev:light-update")
@@ -173,8 +185,11 @@ program
                 "the cozy PaaS and core applications")
     .action ->
         vagrantManager.checkIfVagrantIsInstalled ->
-            vagrantManager.lightUpdate ->
-                console.log "VM updated.".green
+            vagrantManager.lightUpdate (code) ->
+                if code is 0
+                    console.log "VM updated.".green
+                else
+                    console.log "An error occurred while updating the VM".red
 
 program
     .command("*")
