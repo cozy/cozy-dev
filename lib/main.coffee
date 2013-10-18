@@ -15,25 +15,24 @@ client = new Client ""
 
 RepoManager = require('./repository').RepoManager
 repoManager = new RepoManager()
-
-ApplicationManager = require('./application').ApplicationManager
-appManager = new ApplicationManager()
-
-ProjectManager = require('./project').ProjectManager
+ApplicationManager = new require('./application').ApplicationManager
+applicationManager = new ApplicationManager()
+ProjectManager = new require('./project').ProjectManager
 projectManager = new ProjectManager()
-
-VagrantManager = require('./vagrant').VagrantManager
+VagrantManager = new require('./vagrant').VagrantManager
 vagrantManager = new VagrantManager()
 
-### Tasks ###
+helpers = require './helpers'
 
+### Tasks ###
 program
-    .version('0.2.0')
+    .version('0.3.10')
     .option('-u, --url <url>',
             'set url where lives your Cozy Cloud, default to localhost')
     .option('-g, --github <github>',
             'Link new project to github account')
-
+    .option('-c, --coffee',
+            'Create app template with coffee script files instead of JS files')
 
 program
     .command("install <app> <repo>")
@@ -73,17 +72,20 @@ program
     .description("Create a new app suited to be deployed on a Cozy Cloud.")
     .action (appname) ->
         user = program.github
+        isCoffee = program.coffee
 
         if user?
             console.log "Create repo #{appname} for user #{user}..."
             program.password "Github password:", (password) =>
                 program.prompt "Cozy Url:", (url) ->
-                    projectManager.newProject appname, url, user, password, ->
+                    projectManager.newProject(appname, isCoffee,
+                                              url, user, password, ->
                         console.log "Project creation finished.".green
                         process.exit 0
+                    )
         else
             console.log "Create project folder: #{appname}"
-            repoManager.createLocalRepo appname, ->
+            repoManager.createLocalRepo appname, isCoffee, ->
                 console.log "Project creation finished.".green
 
 program
@@ -111,34 +113,83 @@ program
                     console.log msg.green
 
 program
+    .command("dev:destroy")
+    .description("Destroy the virtual machine. Data will be lost.")
+    .action ->
+        confirmMessage = "You are about to remove the virtual machine from " + \
+                         "your computer. All data will be lost and a new " + \
+                         "import will be required if you want to use the " + \
+                         "VM again. [y/n]"
+        program.confirm confirmMessage, (ok) ->
+            if ok
+                vagrantManager.vagrantBoxDestroy ->
+                    msg = "The box has been sucessfully destroyed. Use " + \
+                            "cozy dev:init to be able to use the VM again."
+                    console.log msg.green
+                    # dirty fix because program.confirm seems to be buggy
+                    process.exit()
+
+program
     .command("dev:start")
     .description("Starts the virtual machine with Vagrant.")
     .action ->
         vagrantManager.checkIfVagrantIsInstalled ->
             console.log "Starting the virtual machine...this may take a while."
-            vagrantManager.vagrantUp ->
-                msg = "The virtual machine has been successfully started. " + \
-                      "You can check everything is working by running " + \
-                      "cozy dev:vm-status"
-                console.log msg.green
+            vagrantManager.vagrantUp (code) ->
+                if code is 0
+                    msg = "The virtual machine has been successfully " + \
+                          "started. You can check everything is working " + \
+                          "by running cozy dev:vm-status."
+                    console.log msg.green
+                else
+                    msg = "An error occurred while your VMs was starting."
+                    console.log msg.red
 
+haltOption = "Properly stop the virtual machine instead of simply " + \
+             "suspending its execution"
 program
     .command("dev:stop")
+    .option("-H, --halt", haltOption)
     .description("Stops the Virtual machine with Vagrant.")
     .action ->
-        vagrantManager.checkIfVagrantIsInstalled ->
+        option = @args[0].halt
+        vagrantManager.checkIfVagrantIsInstalled =>
             console.log "Stopping the virtual machine...this may take a while."
-            vagrantManager.vagrantHalt ->
-                msg = "The virtual machine has been successfully stopped."
-                console.log msg.green
+            if option? and option
+                caller = vagrantManager.vagrantHalt
+            else
+                caller = vagrantManager.vagrantSuspend
 
+            caller (code) ->
+                if code is 0
+                    msg = "The virtual machine has been successfully stopped."
+                    console.log msg.green
+                else
+                    msg = "An error occurred while your VMs was shutting down."
+                    console.log msg.red
 program
     .command("dev:vm-status")
     .description("Tells which services of the VM are running and accessible.")
     .action ->
         vagrantManager.checkIfVagrantIsInstalled ->
-            vagrantManager.virtualMachineStatus ->
-                console.log "All the tests have been done."
+            vagrantManager.virtualMachineStatus (code) ->
+                if code is 0
+                    msg = "All the core services are up and running."
+                    console.log msg.green
+                else
+                    console.log "One or more services are not running.".red
+
+program
+    .command("dev:light-update")
+    .description("Updates the virtual machine with the latest version of " + \
+                "the cozy PaaS and core applications")
+    .action ->
+        vagrantManager.checkIfVagrantIsInstalled ->
+            vagrantManager.lightUpdate (code) ->
+                if code is 0
+                    console.log "VM updated.".green
+                else
+                    console.log "An error occurred while updating the VM".red
 
 program
     .command("*")

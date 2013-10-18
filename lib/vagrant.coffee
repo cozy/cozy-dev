@@ -3,17 +3,15 @@ path = require 'path'
 fs = require 'fs'
 Client = require('request-json').JsonClient
 exec = require('child_process').exec
-redis = require 'redis'
 
 helpers = require './helpers'
 
 class exports.VagrantManager
 
     constructor: ->
-        @baseBoxURL = 'https://www.cozycloud.cc/media/cozycloud-dev-latest.box'
+        @baseBoxURL = 'http://files.cozycloud.cc/cozycloud-dev-latest.box'
 
-        page = 'Setup-cozy-cloud-development-environment-via-a-virtual-machine'
-        @docURL = "https://github.com/mycozycloud/cozy-setup/wiki/#{page}"
+        @docURL = "http://cozy.io/hack/getting-started/setup-environment.html"
 
     checkIfVagrantIsInstalled: (callback) ->
         exec "vagrant -v", (err, stdout, stderr) =>
@@ -22,37 +20,42 @@ class exports.VagrantManager
                         "Please, refer to our documentation on #{@docURL}"
                 console.log msg.red
             else
-                callback()
+                callback() if callback?
 
     vagrantBoxAdd: (callback) ->
         cmds = []
         cmds.push
             name: 'vagrant'
-            args: ['box', 'add', @baseBoxURL]
+            args: ['box', 'add', 'cozycloud-dev-latest', @baseBoxURL]
         helpers.spawnUntilEmpty cmds, ->
             msg = "The base box has been added to your environment or is " + \
                   "already installed."
             console.log msg.green
-            callback()
+            callback() if callback?
 
     vagrantInit: (callback) ->
         cmds = []
         cmds.push
             name: 'vagrant'
             args: ['init', "cozy-dev-latest"]
-        helpers.spawnUntilEmpty cmds, ->
-            url = "mycozycloud/cozy-setup/master/dev/Vagrantfile"
-            client = new Client "https://raw.github.com/"
-            client.saveFile url, './Vagrantfile', (err, res, body) ->
+        helpers.spawnUntilEmpty cmds, =>
+            @importVagrantFile callback
 
-                if err
-                    msg = "An error occurrend while retrieving the Vagrantfile"
-                    console.log msg.red
-                else
-                    console.log "Vagrantfile successfully upgraded".green
+    vagrantBoxDestroy: (callback) ->
+        cmds = []
+        cmds.push
+            name: 'vagrant'
+            args: ['--force', 'destroy']
+        cmds.push
+            name: 'vagrant'
+            args: ['box', 'remove', 'cozycloud-dev-latest']
+        cmds.push
+            name: 'rm'
+            args: ['-rf', 'Vagrantfile']
+        helpers.spawnUntilEmpty cmds, callback
 
-                callback()
-
+    # perform "up" if the vm has been "halt"
+    # perform "resume" if the VM has been "suspend"
     vagrantUp: (callback) ->
         cmds = []
         cmds.push
@@ -67,44 +70,63 @@ class exports.VagrantManager
             args: ['halt']
         helpers.spawnUntilEmpty cmds, callback
 
-    virtualMachineStatus: (callback) ->
-        @isServiceUp "Data System", "localhost", 9101
-        @isServiceUp "Cozy Proxy", "localhost", 9104
-        @isServiceUp "Couchdb", "localhost", 5984
-        @isRedisUp "localhost", 6379
+    vagrantSuspend: (callback)  ->
+        cmds = []
+        cmds.push
+            name: 'vagrant'
+            args: ['suspend']
+        helpers.spawnUntilEmpty cmds, callback
 
+    lightUpdate: (callback) ->
+        console.log "Patching the updater and updating the VM..." + \
+                    "This may take a while..."
+        cmds = []
+        cmds.push
+            name: 'vagrant'
+            args: ['ssh', '-c', 'rm -rf ~/update-devenv.sh']
 
-        # we set a timeout so the log msg is always sent at the end
-        setTimeout(callback, 2000)
+        scriptUrl = "https://raw.github.com/mycozycloud/cozy-setup/master/" + \
+                                                       "dev/update-devenv.sh"
+        cmds.push
+            name: 'vagrant'
+            args: ['ssh', '-c', 'curl -Of ' + scriptUrl ]
+        cmds.push
+            name: 'vagrant'
+            args: ['ssh', '-c', 'chmod u+x ~/update-devenv.sh']
+        cmds.push
+            name: 'vagrant'
+            args: ['ssh', '-c', '~/update-devenv.sh']
 
-    isServiceUp: (service, domain, port) ->
-        url = "http://#{domain}:#{port}"
-        client = new Client url
-        client.get '/', (err, res, body) =>
-            @formatServiceUpOutput(service, url, err)
+        @importVagrantFile () ->
+            helpers.spawnUntilEmpty cmds, callback
 
-    isRedisUp: (domain, port) ->
-        url = "http://#{domain}:#{port}"
-        client = redis.createClient 6379, 'localhost'
-
-        process.on 'uncaughtException', (err) ->
-            # Does nothing. Handles the fact that client.end() pops error out
-            # when redis is not started
-            if err.code isnt "ECONNREFUSED"
-                console.log err
-
-        client.on "error", (err) =>
-            # prevent multiple tries
-            client.end()
-
-        client.send_command "PING", [], (err, resp) =>
-            if err?
-                @formatServiceUpOutput("Redis", url, err)
+    importVagrantFile: (callback) ->
+        console.log "Importing latest Vagrantfile version..."
+        url = "mycozycloud/cozy-setup/master/dev/Vagrantfile"
+        client = new Client "https://raw.github.com/"
+        client.saveFile url, './Vagrantfile', (err, res, body) ->
+            if err
+                msg = "An error occurrend while retrieving the Vagrantfile."
+                console.log msg.red
             else
-                @formatServiceUpOutput("Redis", url, null)
-        client.quit()
+                console.log "Vagrantfile successfully upgraded.".green
 
-    formatServiceUpOutput: (service, url, err) ->
-        result = if err is null then "OK".green else "KO".red
-        console.log "#{service} at #{url}........." + result
+            callback() if callback?
 
+    virtualMachineStatus: (callback) ->
+        url = "http://localhost:9104"
+        console.log "Checking status on #{url}..."
+        client = new Client url
+        client.get '/status', (err, res, body) ->
+            if err
+                callback(1)
+            else
+                isOkay = 0
+                for app, status of body
+                    if status is true
+                        formattedStatus = "ok".green
+                    else
+                        formattedStatus = "ko".red
+                        isOkay = 1 if app isnt "registered"
+                    console.log "\t* #{app}: #{formattedStatus}"
+                callback(isOkay)

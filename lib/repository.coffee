@@ -6,10 +6,14 @@ helpers = require './helpers'
 
 class exports.RepoManager
 
-    createLocalRepo: (appname, callback) ->
+    createLocalRepo: (appname, isCoffee, callback) ->
 
         cmds = []
-        repo = "https://github.com/mycozycloud/cozy-template.git"
+        unless isCoffee
+            repo = "https://github.com/mycozycloud/cozy-template.git"
+        else
+            repo = "https://github.com/mycozycloud/cozy-template-coffee.git"
+
         appPath = "#{process.cwd()}/#{appname}"
 
         cmds.push
@@ -22,11 +26,21 @@ class exports.RepoManager
             args: ['submodule', 'update', '--init', '--recursive']
             opts:
                 cwd: appPath
-        cmds.push
-            name: "rm"
-            args: ['-rf', '.git']
-            opts:
-                cwd: appPath
+
+        if helpers.isRunningOnWindows()
+            removeGitFolderCommand =
+                name: "rmdir"
+                args: ['/S', '/Q', '.git']
+                opts:
+                    cwd: appPath
+        else
+            removeGitFolderCommand =
+                name: "rm"
+                args: ['-rf', '.git']
+                opts:
+                    cwd: appPath
+        cmds.push removeGitFolderCommand
+
         cmds.push
             name: "npm"
             args: ['install']
@@ -40,8 +54,11 @@ class exports.RepoManager
 
         console.log "Creating the project structure..."
 
-        helpers.spawnUntilEmpty cmds, ->
-            console.log "Project structure created.".green
+        helpers.spawnUntilEmpty cmds, (code) ->
+            if code is 0
+                console.log "Project structure created.".green
+            else
+                console.log "An error occurrend during project structure creation".red
             callback()
 
     connectRepos: (user, appname, callback) ->

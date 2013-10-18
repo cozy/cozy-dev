@@ -28,7 +28,6 @@ class exports.ApplicationManager
         else
             callback()
 
-
     updateApp: (app, url, password, callback) ->
         console.log "Update #{app}..."
         @client.configure url, password, =>
@@ -87,7 +86,6 @@ class exports.ApplicationManager
                                 callback()
 
         @client.configure url, password, checkStatus
-
 
     isInstalled: (app, url, password, callback) =>
         @client.configure url, password, =>
