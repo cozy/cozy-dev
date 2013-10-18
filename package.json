@@ -1,6 +1,6 @@
 {
   "name": "cozy",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "author": "Cozycloud <contact@cozycloud.cc>",
   "description": "Tools to start and deploy Cozy applications easily",
   "license": "LGPL v3",
