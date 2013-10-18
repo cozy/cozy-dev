@@ -113,16 +113,18 @@ class exports.RepoManager
     saveConfig: (githubUser, app, url, callback) ->
         data =
         """
-            exports.config =
-                cozy:
-                    appName: "#{app}"
-                    url: "#{url}"
-                github:
-                    user: "#{githubUser}"
-                    repoName: "#{app}"
-
+            {
+                "cozy": {
+                    "appName": "#{app}",
+                    "url": "#{url}"
+                },
+                "github": {
+                    "user": "#{githubUser}",
+                    "repoName": "#{app}"
+                }
+            }
         """
-        fs.writeFile path.join(app, 'deploy_config.coffee'), data, (err) ->
+        fs.writeFile path.join(app, '.cozy_conf.json'), data, (err) ->
             if err
                 console.log err.red
             else

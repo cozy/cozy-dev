@@ -78,7 +78,7 @@ program
             console.log "Create repo #{appname} for user #{user}..."
             program.password "Github password:", (password) =>
                 program.prompt "Cozy Url:", (url) ->
-                    projectManager.newProject(appname, isCoffee,
+                    projectManager.newProject(appname, isCoffee, \
                                               url, user, password, ->
                         console.log "Project creation finished.".green
                         process.exit 0
@@ -93,7 +93,7 @@ program
     .description("Push code and deploy app located in current directory " + \
                  "to Cozy Cloud url configured in configuration file.")
     .action ->
-        config = require(path.join(process.cwd(), "deploy_config")).config
+        config = require(path.join(process.cwd(), ".cozy_conf.json"))
         program.password "Cozy password:", (password) ->
             projectManager.deploy config, password, ->
                 console.log "#{config.cozy.appName} sucessfully deployed.".green
@@ -103,7 +103,7 @@ program
     .description("Initialize the current folder to host a virtual machine " + \
                  "with Vagrant. This will download the base box file.")
     .action ->
-        console.log "Initializing the vritual machine in the folder..." + \
+        console.log "Initializing the virtual machine in the folder..." + \
                     "this may take a while."
         vagrantManager.checkIfVagrantIsInstalled ->
             vagrantManager.vagrantBoxAdd ->
