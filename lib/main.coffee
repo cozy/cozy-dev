@@ -24,9 +24,11 @@ vagrantManager = new VagrantManager()
 
 helpers = require './helpers'
 
+appData = require '../package.json'
+
 ### Tasks ###
 program
-    .version('0.3.10')
+    .version(appData.version)
     .option('-u, --url <url>',
             'set url where lives your Cozy Cloud, default to localhost')
     .option('-g, --github <github>',
