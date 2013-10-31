@@ -58,7 +58,8 @@ class exports.RepoManager
             if code is 0
                 console.log "Project structure created.".green
             else
-                console.log "An error occurrend during project structure creation".red
+                msg = "An error occurrend during project structure creation"
+                console.log msg.red
             callback()
 
     connectRepos: (user, appname, callback) ->
