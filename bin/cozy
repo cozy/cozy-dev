@@ -1,7 +1,9 @@
-#!/usr/bin/env coffee
+#! /usr/local/bin/node
 
-path = require('path')
-fs = require('fs')
+// Boostrap CLI tool
+var path = require('path'),
+    fs = require('fs');
 
-src = path.join(path.dirname(fs.realpathSync(__filename)), '..', 'lib')
-require(path.join(src, 'main'))
+var src = path.join(path.dirname(fs.realpathSync(__filename)), '..', 'lib');
+
+require(path.join(src, 'main'));
