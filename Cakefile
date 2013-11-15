@@ -29,7 +29,7 @@ task "build", "Compile coffee files to JS", ->
             console.log stdout
             process.exit 0
 
-task "clear-js", "Remove built JS files", ->
+task "clean-js", "Remove built JS files", ->
     console.log "Remove built JS files..."
 
     command = "rm -rf lib/*.js"
