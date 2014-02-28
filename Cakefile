@@ -18,27 +18,13 @@ walk = (dir, excludeElements = []) ->
 task "build", "Compile coffee files to JS", ->
     console.log "Compile coffee files to JS..."
 
-    files = walk "lib", []
-    command = "coffee -cb #{files.join ' '} "
+    command = "coffee --compile --output lib/ src/ "
     exec command, (err, stdout, stderr) ->
         if err
             console.log "Running coffee-script compiler caught exception: \n" + err
             process.exit 1
         else
             console.log "Compilation succeeded."
-            console.log stdout
-            process.exit 0
-
-task "clean-js", "Remove built JS files", ->
-    console.log "Remove built JS files..."
-
-    command = "rm -rf lib/*.js"
-    exec command, (err, stdout, stderr) ->
-        if err
-            console.log "Running coffee-script compiler caught exception: \n" + err
-            process.exit 1
-        else
-            console.log "Built files successfully removed."
             console.log stdout
             process.exit 0
 

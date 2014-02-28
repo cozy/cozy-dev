@@ -23,8 +23,7 @@
     "node": "0.8 || 0.9"
   },
   "scripts": {
-    "prepublish": "cake build",
-    "postpublish": "cake clean-js"
+    "prepublish": "cake build"
   },
   "dependencies": {
     "commander": "=1.2.0",
