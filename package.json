@@ -1,13 +1,20 @@
 {
   "name": "cozy",
   "version": "0.4.5",
-  "author": "Cozycloud <contact@cozycloud.cc>",
   "description": "Tools to start and deploy Cozy applications easily",
   "license": "LGPL v3",
   "main": "./lib/main",
   "bin": {
     "cozy": "./bin/cozy"
   },
+  "author": "Cozy Cloud <contact@cozycloud.cc> (http://cozycloud.cc)",
+  "licenses": [
+    {
+      "type": "AGPL v3",
+      "url": "http://www.gnu.org/licenses/agpl-3.0.html"
+    }
+  ],
+ 
   "repository": {
     "type": "git",
     "url": "https://github.com/mycozycloud/cozy-manager"
@@ -17,10 +24,11 @@
     "deploy",
     "cozy",
     "web",
+    "spa",
     "application"
   ],
   "engines": {
-    "node": "0.8 || 0.9"
+    "node": "*"
   },
   "scripts": {
     "prepublish": "cake build",
