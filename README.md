@@ -43,7 +43,7 @@ Each modification requires a new build, here is how to run a build:
 
 ## License
 
-Cozy Manager is developed by Cozy Cloud and distributed under the GPL v3 license.
+Cozy Manager is developed by Cozy Cloud and distributed under the LGPL v3 license.
 
 ## What is Cozy?
 
