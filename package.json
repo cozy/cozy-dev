@@ -1,6 +1,6 @@
 {
   "name": "cozy",
-  "version": "0.4.8",
+  "version": "0.4.9",
   "description": "Tools develop Cozy applications easily",
   "license": "LGPL v3",
   "main": "./lib/main",
