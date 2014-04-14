@@ -1,9 +1,9 @@
-# Cozy Manager
+# Cozy Dev
 
-Cozy Manager is a tool for Cozy Web Application developers. It makes easy to
+Cozy Dev is a tool for Cozy Web Application developers. It makes easy to
 start with building an application for the Cozy Cloud Platform.
 
-    npm install cozy -g
+    npm install cozy-dev -g
     cozy new myapp --github myaccount
     cd myapp
 
@@ -13,7 +13,7 @@ Add some features, then:
 
 # Managing your virtual machine
 
-The Cozy Manager helps you to manage a virtual machine through Vagrant.
+Cozy Dev helps you to manage a virtual machine through Vagrant.
 
 ```
 cozy dev:init
@@ -22,19 +22,19 @@ cozy dev:start
 cozy dev:stop
 ```
 
-More information about CozyCloud and virtual machines in [the documentation](http://cozy.io/install.html).
+More information about CozyCloud and virtual machines in [the documentation](http://cozy.io/hack/getting-started/setup-environment.html#for-applications-that-take-advantage-of-the-data-system).
 
 ## Hack
 
 Get sources:
 
-    git clone https://github.com/mycozycloud/cozy-monitor.git
+    git clone https://github.com/mycozycloud/cozy-dev.git
 
 Run:
 
-    cd cozy-monitor
-    chmod +x bin/cozy-monitor
-    ./bin/cozy-monitor
+    cd cozy-dev
+    chmod +x bin/cozy
+    ./bin/cozy
 
 Each modification requires a new build, here is how to run a build:
 
@@ -52,9 +52,9 @@ Cozy Manager is developed by Cozy Cloud and distributed under the LGPL v3 licens
 [Cozy](http://cozy.io) is a platform that brings all your web services in the
 same private space.  With it, your web apps and your devices can share data
 easily, providing you with a new experience. You can install Cozy on your own
-hardware where no one profiles you. 
+hardware where no one profiles you.
 
-## Community 
+## Community
 
 You can reach the Cozy Community by:
 

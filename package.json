@@ -1,11 +1,11 @@
 {
-  "name": "cozy",
-  "version": "0.4.10",
-  "description": "Tools develop Cozy applications easily",
+  "name": "cozy-dev",
+  "version": "1.0.0",
+  "description": "Tools to develop Cozy applications easily",
   "license": "LGPL v3",
   "main": "./lib/main",
   "bin": {
-    "cozy": "./bin/cozy"
+    "cozy-dev": "./bin/cozy"
   },
   "author": "Cozy Cloud <contact@cozycloud.cc> (http://cozycloud.cc)",
   "licenses": [
