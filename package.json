@@ -1,7 +1,7 @@
 {
   "name": "cozy",
-  "version": "0.4.10",
-  "description": "Tools develop Cozy applications easily",
+  "version": "0.5.0",
+  "description": "Tools to develop Cozy applications easily",
   "license": "LGPL v3",
   "main": "./lib/main",
   "bin": {
@@ -30,15 +30,9 @@
     "node": "*"
   },
   "scripts": {
-    "prepublish": "cake build"
   },
   "dependencies": {
-    "commander": "=1.2.0",
-    "async": "=0.1.22",
-    "request-json": "=0.3.4",
-    "colors": "=0.6.0-1"
   },
   "devDependencies": {
-    "coffeelint": "0.6.1"
   }
 }

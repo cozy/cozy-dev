@@ -1,7 +1,0 @@
-#!/usr/bin/env coffee
-
-path = require 'path'
-fs = require 'fs'
-
-src = path.join path.dirname(fs.realpathSync(__filename)), '..', 'lib'
-require path.join(src, 'main')

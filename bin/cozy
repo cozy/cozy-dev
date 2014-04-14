@@ -1,9 +1,3 @@
 #!/usr/bin/env node
 
-// Boostrap CLI tool
-var path = require('path'),
-    fs = require('fs');
-
-var src = path.join(path.dirname(fs.realpathSync(__filename)), '..', 'lib');
-
-require(path.join(src, 'main'));
+console.log("[WARNING] This tool has been deprecated in favor of a new one: cozy-dev. Check it out on https://github.com/mycozycloud/cozy-dev/.");
