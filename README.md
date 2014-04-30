@@ -9,17 +9,17 @@ start with building an application for the Cozy Cloud Platform.
 
 Add some features, then:
 
-    cozy deploy
+    cozy-dev deploy
 
 # Managing your virtual machine
 
 Cozy Dev helps you to manage a virtual machine through Vagrant.
 
 ```
-cozy dev:init
-cozy dev:start
+cozy-dev dev:init
+cozy-dev dev:start
 
-cozy dev:stop
+cozy-dev dev:stop
 ```
 
 More information about CozyCloud and virtual machines in [the documentation](http://cozy.io/hack/getting-started/setup-environment.html#for-applications-that-take-advantage-of-the-data-system).
