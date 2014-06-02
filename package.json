@@ -33,12 +33,12 @@
     "prepublish": "cake build"
   },
   "dependencies": {
-    "commander": "=1.2.0",
-    "async": "=0.1.22",
-    "request-json": "=0.3.4",
-    "colors": "=0.6.0-1"
+    "commander": "2.2.0",
+    "async": "0.9.0",
+    "request-json": "0.4.10",
+    "colors": "0.6.2"
   },
   "devDependencies": {
-    "coffeelint": "0.6.1"
+    "coffeelint": "1.5.1"
   }
 }
