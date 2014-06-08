@@ -9,7 +9,7 @@ helpers = require './helpers'
 class exports.VagrantManager
 
     constructor: ->
-        @baseBoxURL = 'http://files.cozycloud.cc/cozycloud-dev-latest.box'
+        @baseBoxURL = 'https://files.cozycloud.cc/cozycloud-dev-latest.box'
 
         @docURL = "http://cozy.io/hack/getting-started/setup-environment.html"
 
