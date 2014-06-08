@@ -85,8 +85,8 @@ class exports.VagrantManager
             name: 'vagrant'
             args: ['ssh', '-c', 'rm -rf ~/update-devenv.sh']
 
-        scriptUrl = "https://raw.github.com/mycozycloud/cozy-setup/master/" + \
-                                                       "dev/update-devenv.sh"
+        scriptUrl = "https://raw.githubusercontent.com/mycozycloud/" + \
+                    "cozy-setup/master/dev/update-devenv.sh"
         cmds.push
             name: 'vagrant'
             args: ['ssh', '-c', 'curl -Of ' + scriptUrl ]
