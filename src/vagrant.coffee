@@ -103,7 +103,7 @@ class exports.VagrantManager
     importVagrantFile: (callback) ->
         console.log "Importing latest Vagrantfile version..."
         url = "mycozycloud/cozy-setup/master/dev/Vagrantfile"
-        client = new Client "https://raw.github.com/"
+        client = new Client "https://raw.githubusercontent.com/"
         client.saveFile url, './Vagrantfile', (err, res, body) ->
             if err
                 msg = "An error occurrend while retrieving the Vagrantfile."
