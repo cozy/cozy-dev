@@ -77,7 +77,7 @@ class exports.VagrantManager
             args: ['suspend']
         helpers.spawnUntilEmpty cmds, callback
 
-    lightUpdate: (callback) ->
+    update: (callback) ->
         console.log "Patching the updater and updating the VM..." + \
                     "This may take a while..."
         cmds = []

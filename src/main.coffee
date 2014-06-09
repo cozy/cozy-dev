@@ -182,12 +182,12 @@ program
                     console.log "One or more services are not running.".red
 
 program
-    .command("dev:light-update")
+    .command("dev:update")
     .description("Updates the virtual machine with the latest version of " + \
                 "the cozy PaaS and core applications")
     .action ->
         vagrantManager.checkIfVagrantIsInstalled ->
-            vagrantManager.lightUpdate (code) ->
+            vagrantManager.update (code) ->
                 if code is 0
                     console.log "VM updated.".green
                 else
