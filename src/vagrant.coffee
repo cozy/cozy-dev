@@ -26,7 +26,7 @@ class exports.VagrantManager
         cmds = []
         cmds.push
             name: 'vagrant'
-            args: ['box', 'add', @baseBox]
+            args: ['box', 'add', @baseBoxName]
         helpers.spawnUntilEmpty cmds, ->
             msg = "The base box has been added to your environment or is " + \
                   "already installed."
