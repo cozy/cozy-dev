@@ -9,7 +9,7 @@ helpers = require './helpers'
 class exports.VagrantManager
 
     constructor: ->
-        @baseBoxURL = 'http://files.cozycloud.cc/cozycloud-dev-latest.box'
+        @baseBoxName = 'cozycloud/cozy-dev'
 
         @docURL = "http://cozy.io/hack/getting-started/setup-environment.html"
 
@@ -26,7 +26,7 @@ class exports.VagrantManager
         cmds = []
         cmds.push
             name: 'vagrant'
-            args: ['box', 'add', 'cozycloud-dev-latest', @baseBoxURL]
+            args: ['box', 'add', 'cozycloud-dev-latest', @baseBox]
         helpers.spawnUntilEmpty cmds, ->
             msg = "The base box has been added to your environment or is " + \
                   "already installed."
