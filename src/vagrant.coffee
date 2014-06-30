@@ -85,7 +85,7 @@ class exports.VagrantManager
             name: 'vagrant'
             args: ['ssh', '-c', 'rm -rf ~/update-devenv.sh']
 
-        scriptUrl = "https://raw.githubusercontent.com/mycozycloud/" + \
+        scriptUrl = "https://raw.githubusercontent.com/cozy/" + \
                     "cozy-setup/master/dev/update-devenv.sh"
         cmds.push
             name: 'vagrant'
@@ -102,7 +102,7 @@ class exports.VagrantManager
 
     importVagrantFile: (callback) ->
         console.log "Importing latest Vagrantfile version..."
-        url = "mycozycloud/cozy-setup/master/dev/Vagrantfile"
+        url = "cozy/cozy-setup/master/dev/Vagrantfile"
         client = new Client "https://raw.githubusercontent.com/"
         client.saveFile url, './Vagrantfile', (err, res, body) ->
             if err

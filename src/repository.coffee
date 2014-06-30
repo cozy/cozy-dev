@@ -10,9 +10,9 @@ class exports.RepoManager
 
         cmds = []
         unless isCoffee
-            repo = "https://github.com/mycozycloud/cozy-template.git"
+            repo = "https://github.com/cozy/cozy-template.git"
         else
-            repo = "https://github.com/mycozycloud/cozy-template-coffee.git"
+            repo = "https://github.com/cozy/cozy-template-coffee.git"
 
         appPath = "#{process.cwd()}/#{appname}"
 
