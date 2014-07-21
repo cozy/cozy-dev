@@ -3,6 +3,7 @@ path = require 'path'
 fs = require 'fs'
 Client = require('request-json').JsonClient
 exec = require('child_process').exec
+compareVersions = require("mozilla-version-comparator")
 
 helpers = require './helpers'
 
@@ -13,6 +14,9 @@ class exports.VagrantManager
 
         @docURL = "http://cozy.io/hack/getting-started/setup-environment.html"
 
+        # Minimum required version to make Vagrant work with cozy-dev
+        @minimumVagrantVersion = "1.5.0"
+
     checkIfVagrantIsInstalled: (callback) ->
         exec "vagrant -v", (err, stdout, stderr) =>
             if err
@@ -20,7 +24,20 @@ class exports.VagrantManager
                         "Please, refer to our documentation on #{@docURL}"
                 console.log msg.red
             else
-                callback() if callback?
+                versionMatch = stdout.match /Vagrant ([\d\.]+)/
+                if not versionMatch? or versionMatch.length is not 1
+                    msg = "Cannot correctly check the version using the " + \
+                            "\"vagrant -v\" command. Please report an issue."
+                    console.log msg.red
+                    console.log "Output of \"vagrant -v\": #{stdout}.".red
+                # If the installed version of Vagrant is older than the
+                # required one, raise an error (see issue #31)
+                else if ~compareVersions @minimumVagrantVersion, versionMatch[1]
+                        msg = "cozy-dev requires Vagrant " + \
+                                "#{@minimumVagrantVersion} or later."
+                        console.log msg.red
+                else
+                    callback() if callback?
 
     vagrantBoxAdd: (callback) ->
         cmds = []
