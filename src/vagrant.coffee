@@ -30,12 +30,13 @@ class exports.VagrantManager
                             "\"vagrant -v\" command. Please report an issue."
                     console.log msg.red
                     console.log "Output of \"vagrant -v\": #{stdout}.".red
+
                 # If the installed version of Vagrant is older than the
                 # required one, raise an error (see issue #31)
                 else if ~compareVersions @minimumVagrantVersion, versionMatch[1]
-                        msg = "cozy-dev requires Vagrant " + \
-                                "#{@minimumVagrantVersion} or later."
-                        console.log msg.red
+                    msg = "cozy-dev requires Vagrant " + \
+                            "#{@minimumVagrantVersion} or later."
+                    console.log msg.red
                 else
                     callback() if callback?
 
