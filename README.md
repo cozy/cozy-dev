@@ -11,6 +11,15 @@ Add some features, then:
 
     cozy-dev deploy
 
+# Requirements
+
+Cozy Dev requires:
+
+* Git ([Download](http://git-scm.com/book/en/Getting-Started-Installing-Git))
+* Node.js (v0.10.26) ([Download](http://blog.nodejs.org/2014/02/18/node-v0-10-26-stable/))
+* Virtualbox (>= v4.3.0) ([Download](https://www.virtualbox.org/wiki/Downloads))
+* Vagrant (>= v1.5.0) ([Download](http://www.vagrantup.com/downloads.html))
+
 # Managing your virtual machine
 
 Cozy Dev helps you to manage a virtual machine through Vagrant.
