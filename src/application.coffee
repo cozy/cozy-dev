@@ -77,7 +77,7 @@ class exports.ApplicationManager
                 checkApp "home"
                 checkApp "proxy", "routes"
             ], =>
-                @client.get "api/applications/", (err, res, apps) =>
+                @client.get "api/applications/", (err, res, apps) ->
                     if err?
                         log.error err.red
                     else
