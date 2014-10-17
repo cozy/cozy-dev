@@ -1,7 +1,11 @@
 require 'colors'
+log = require('printit')
+    prefix: 'cozy-dev'
+async = require 'async'
+
 helpers = require './helpers'
-RepoManager = require('./repository').RepoManager
-ApplicationManager = require('./application').ApplicationManager
+{RepoManager} = require './repository'
+{ApplicationManager} = require './application'
 
 class exports.ProjectManager
 
@@ -13,11 +17,13 @@ class exports.ProjectManager
             password: password
             username: user
 
-        @repoManager.createGithubRepo credentials, name, =>
-            @repoManager.createLocalRepo name, isCoffee, =>
-                @repoManager.connectRepos user, name, =>
-                    @repoManager.saveConfig user, name, url, ->
-                        callback()
+        async.series [
+            (cb) => @repoManager.createGithubRepo credentials, name, cb
+            (cb) => @repoManager.createLocalRepo name, isCoffee, cb
+            (cb) => @repoManager.connectRepos user, name, cb
+            (cb) => @repoManager.saveConfig user, name, url, cb
+        ], callback
+
 
     deploy: (config, password, callback) ->
         name = config.cozy.appName
@@ -27,17 +33,15 @@ class exports.ProjectManager
 
         install = =>
             repoUrl = "https://github.com/#{user}/#{repoName}.git"
-            @appManager.installApp name, url, repoUrl, password, ->
-                callback()
+            @appManager.installApp name, url, repoUrl, password, callback
 
         update = =>
-            @appManager.updateApp name, url, password, ->
-                callback()
+            @appManager.updateApp name, url, password, callback
 
         @appManager.isInstalled name, url, password, (err, isInstalled) ->
-            if err
-                console.log "Error occured while connecting" + \
-                            "to your Cozy Cloud.".red
+            if err?
+                msg = "Error occured while connecting to your Cozy Cloud."
+                log.error msg.red
             else if isInstalled
                 update()
             else

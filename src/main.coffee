@@ -4,6 +4,7 @@ path = require 'path'
 log = require('printit')
     prefix: 'cozy-dev'
 inquirer = require 'inquirer'
+async = require 'async'
 
 Client = require("request-json").JsonClient
 Client::configure = (url, password, callback) ->
@@ -43,54 +44,47 @@ program
     .command "install <app> <repo>"
     .description "Install given application from its repository"
     .action (app, repo) ->
-        options =
-            type: 'password'
-            name: 'password'
-            message: 'Cozy password'
-        inquirer.prompt options, (answers) ->
-            {password} = answers
-            appManager.installApp app, program.url, repo, password, ->
-                log.info "#{app} successfully installed.".green
+        async.waterfall [
+            helpers.promptPassword 'Cozy password'
+            (password, cb) ->
+                appManager.installApp app, program.url, repo, password, cb
+        ], ->
+            log.info "#{app} successfully installed.".green
 
 program
     .command "uninstall <app>"
     .description "Uninstall given application"
     .action (app) ->
-        options =
-            type: 'password'
-            name: 'password'
-            message: 'Cozy password'
-        inquirer.prompt options, (answers) ->
-            {password} = answers
-            appManager.uninstallApp app, program.url, password, ->
-                log.info "#{app} successfully uninstalled.".green
+        async.waterfall [
+            helpers.promptPassword 'Cozy password'
+            (password, cb) ->
+                appManager.uninstallApp app, program.url, password, cb
+        ], ->
+            log.info "#{app} successfully uninstalled.".green
 
 program
     .command "update <app>"
     .description(
         "Update application (git + npm install) and restart it through haibu")
     .action (app) ->
-        options =
-            type: 'password'
-            name: 'password'
-            message: 'Cozy password'
-        inquirer.prompt options, (answers) ->
-            {password} = answers
-            appManager.updateApp app, program.url, password, ->
-                log.info "#{app} successfully updated.".green
+
+        async.waterfall [
+            helpers.promptPassword 'Cozy password'
+            (password, cb) ->
+                appManager.updateApp app, program.url, password, cb
+        ], ->
+            log.info "#{app} successfully updated.".green
 
 program
     .command "status"
     .description "Give current state of cozy platform applications"
     .action ->
-        options =
-            type: 'password'
-            name: 'password'
-            message: 'Cozy password'
-        inquirer.prompt options, (answers) ->
-            {password} = answers
-            appManager.checkStatus program.url, password, ->
-                log.info "All apps have been checked.".green
+        async.waterfall [
+            helpers.promptPassword 'Cozy password'
+            (password, cb) ->
+                appManager.checkStatus program.url, password, cb
+        ], ->
+            log.info "All apps have been checked.".green
 
 program
     .command "new <appname>"
@@ -101,23 +95,24 @@ program
 
         if user?
             log.info "Create repo #{appname} for user #{user}..."
-            options =
-                type: 'password'
-                name: 'password'
-                message: 'Github password'
-            inquirer.prompt options, (answers) ->
-                {password} = answers
-                options =
-                    type: 'input'
-                    name: 'url'
-                    message: 'Cozy URL'
-                inquirer.prompt options, (answers) ->
-                    {url} = answers
+            async.waterfall [
+                helpers.promptPassword 'Github password'
+
+                (password, cb) ->
+                    options =
+                        type: 'input'
+                        name: 'url'
+                        message: 'Cozy URL'
+                    inquirer.prompt options, (answers) ->
+                        cb null, password, answers.url
+
+                (url, password, cb) ->
                     projectManager.newProject(appname, isCoffee, \
-                                              url, user, password, ->
-                        log.info "Project creation finished.".green
-                        process.exit 0
-                    )
+                                                  url, user, password, cb)
+
+            ], ->
+                log.info "Project creation finished.".green
+                process.exit 0
         else
             log.info "Create project folder: #{appname}"
             repoManager.createLocalRepo appname, isCoffee, ->
@@ -130,14 +125,13 @@ program
     .action ->
         config = require path.join(process.cwd(), ".cozy_conf.json")
 
-        options =
-            type: 'password'
-            name: 'password'
-            message: 'Cozy password'
-        inquirer.prompt options, (answers) ->
-            {password} = answers
-            projectManager.deploy config, password, ->
-                log.info "#{config.cozy.appName} successfully deployed.".green
+        async.waterfall [
+            helpers.promptPassword 'Cozy password'
+
+            (password, cb) ->
+                projectManager.deploy config, password, cb
+        ], ->
+            log.info "#{config.cozy.appName} successfully deployed.".green
 
 program
     .command "dev:init"
@@ -146,12 +140,15 @@ program
     .action ->
         log.info "Initializing the virtual machine in the folder..." + \
                     "this may take a while."
-        vagrantManager.checkIfVagrantIsInstalled ->
-            vagrantManager.vagrantBoxAdd ->
-                vagrantManager.vagrantInit ->
-                    msg = "The virtual machine has been successfully " + \
-                          "initialized."
-                    log.info msg.green
+
+        async.series [
+            (cb) -> vagrantManager.checkIfVagrantIsInstalled cb
+            (cb) -> vagrantManager.vagrantBoxAdd cb
+            (cb) -> vagrantManager.vagrantInit cb
+        ], ->
+            msg = "The virtual machine has been successfully " + \
+                  "initialized."
+            log.info msg.green
 
 program
     .command "dev:destroy"
@@ -160,35 +157,48 @@ program
         confirmMessage = "You are about to remove the virtual machine from " + \
                          "your computer. All data will be lost and a new " + \
                          "import will be required if you want to use the " + \
-                         "VM again. [y/n]"
-        options =
-            type: 'confirm'
-            name: 'hasConfirm'
-            message: confirmMessage
-            default: true
-        inquirer.prompt options, (answers) ->
-            if answers.hasConfirm
-                vagrantManager.vagrantBoxDestroy ->
-                    msg = "The box has been successfully destroyed. Use " + \
-                            "cozy dev:init to be able to use the VM again."
-                    log.info msg.green
-                    process.exit()
+                         "VM again"
 
+        async.waterfall [
+            (cb) ->
+                options =
+                    type: 'confirm'
+                    name: 'hasConfirm'
+                    message: confirmMessage
+                    default: true
+                inquirer.prompt options, (answers) ->
+                    cb null, answers.hasConfirm
+
+            (hasConfirm, cb) ->
+                if answers.hasConfirm
+                    vagrantManager.vagrantBoxDestroy cb
+                else
+                    cb()
+        ], ->
+            msg = "The box has been successfully destroyed. Use " + \
+                    "cozy dev:init to be able to use the VM again."
+            log.info msg.green
+            process.exit()
 program
     .command "dev:start"
     .description "Starts the virtual machine with Vagrant."
     .action ->
-        vagrantManager.checkIfVagrantIsInstalled ->
-            log.info "Starting the virtual machine...this may take a while."
-            vagrantManager.vagrantUp (code) ->
-                if code is 0
-                    msg = "The virtual machine has been successfully " + \
-                          "started. You can check everything is working " + \
-                          "by running cozy dev:vm-status."
-                    log.info msg.green
-                else
-                    msg = "An error occurred while your VMs was starting."
-                    log.error msg.red
+        async.series [
+            (cb) -> vagrantManager.checkIfVagrantIsInstalled cb
+            (cb) ->
+                log.info "Starting the virtual machine...this may take a while."
+                vagrantManager.vagrantUp (code) -> cb null, code
+        ], (err, results) ->
+            [_, code] = results
+
+            if code is 0
+                msg = "The virtual machine has been successfully started. " + \
+                      "You can check everything is working by running cozy " + \
+                      "dev:vm-status."
+                log.info msg.green
+            else
+                msg = "An error occurred while your VMs was starting."
+                log.error msg.red
 
 haltOption = "Properly stop the virtual machine instead of simply " + \
              "suspending its execution"
@@ -198,43 +208,55 @@ program
     .description "Stops the Virtual machine with Vagrant."
     .action ->
         option = @args[0].halt
-        vagrantManager.checkIfVagrantIsInstalled =>
-            log.info "Stopping the virtual machine...this may take a while."
-            if option? and option
-                caller = vagrantManager.vagrantHalt
-            else
-                caller = vagrantManager.vagrantSuspend
+        if option? and option
+            caller = vagrantManager.vagrantHalt
+        else
+            caller = vagrantManager.vagrantSuspend
 
-            caller (code) ->
-                if code is 0
-                    msg = "The virtual machine has been successfully stopped."
-                    log.info msg.green
-                else
-                    msg = "An error occurred while your VMs was shutting down."
-                    log.error msg.red
+        async.series [
+            (cb) -> vagrantManager.checkIfVagrantIsInstalled cb
+            (cb) ->
+                log.info "Stopping the virtual machine...this may take a while."
+                caller (code) -> cb null, code
+        ], (err, results) ->
+            [_, code] = results
+
+            if code is 0
+                msg = "The virtual machine has been successfully stopped."
+                log.info msg.green
+            else
+                msg = "An error occurred while your VMs was shutting down."
+                log.error msg.red
 program
     .command "dev:vm-status"
     .description "Tells which services of the VM are running and accessible."
     .action ->
-        vagrantManager.checkIfVagrantIsInstalled ->
-            vagrantManager.virtualMachineStatus (code) ->
-                if code is 0
-                    msg = "All the core services are up and running."
-                    log.info msg.green
-                else
-                    log.error "One or more services are not running.".red
+        async.series [
+            (cb) -> vagrantManager.checkIfVagrantIsInstalled cb
+            (cb) -> vagrantManager.virtualMachineStatus (code) -> cb null, code
+        ], (err, results) ->
+            [_, code] = results
+
+            if code is 0
+                log.info "All the core services are up and running.".green
+            else
+                log.error "One or more services are not running.".red
 
 program
     .command "dev:update"
     .description "Updates the virtual machine with the latest version of " + \
                  "the cozy PaaS and core applications"
     .action ->
-        vagrantManager.checkIfVagrantIsInstalled ->
-            vagrantManager.update (code) ->
-                if code is 0
-                    log.info "VM updated.".green
-                else
-                    log.error "An error occurred while updating the VM".red
+        async.series [
+            (cb) -> vagrantManager.checkIfVagrantIsInstalled cb
+            (cb) -> vagrantManager.update (code) -> cb null, code
+        ], (err, results) ->
+            [_, code] = results
+
+            if code is 0
+                log.info "VM updated.".green
+            else
+                log.error "An error occurred while updating the VM".red
 
 program
     .command "*"
