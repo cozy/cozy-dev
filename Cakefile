@@ -1,5 +1,7 @@
 fs     = require 'fs'
 {exec} = require 'child_process'
+log = require('printit')
+        prefix: 'cake'
 
 walk = (dir, excludeElements = []) ->
     fileList = []
@@ -16,30 +18,27 @@ walk = (dir, excludeElements = []) ->
     return fileList
 
 task "build", "Compile coffee files to JS", ->
-    console.log "Compile coffee files to JS..."
+    log.info "Compile coffee files to JS..."
 
     command = "coffee --compile --output lib/ src/ "
     exec command, (err, stdout, stderr) ->
         if err
-            console.log "Running coffee-script compiler caught exception: \n" + err
+            log.error "Running coffee-script compiler caught exception:\n#{err}"
             process.exit 1
         else
-            console.log "Compilation succeeded."
-            console.log stdout
+            log.info "Compilation succeeded."
             process.exit 0
 
 task "lint", "Run coffeelint on source files", ->
     lintFiles = walk '.',  ['node_modules', 'tests']
 
-    # if installed globally, output will be colored
     testCommand = "coffeelint -v"
     exec testCommand, (err, stdout, stderr) ->
-        if err or stderr
+        if err? or stderr?
             command = "./node_modules/coffeelint/bin/coffeelint"
         else
             command = "coffeelint"
 
         command += " -f coffeelint.json -r " + lintFiles.join " "
         exec command, (err, stdout, stderr) ->
-            console.log stderr
-            console.log stdout
+            log.info stdout
