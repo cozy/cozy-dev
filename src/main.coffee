@@ -3,6 +3,7 @@ program = require 'commander'
 path = require 'path'
 log = require('printit')
     prefix: 'cozy-dev'
+inquirer = require 'inquirer'
 
 Client = require("request-json").JsonClient
 Client::configure = (url, password, callback) ->
@@ -18,7 +19,7 @@ client = new Client ""
 RepoManager = require('./repository').RepoManager
 repoManager = new RepoManager()
 ApplicationManager = new require('./application').ApplicationManager
-applicationManager = new ApplicationManager()
+appManager = new ApplicationManager()
 ProjectManager = new require('./project').ProjectManager
 projectManager = new ProjectManager()
 VagrantManager = new require('./vagrant').VagrantManager
@@ -42,7 +43,12 @@ program
     .command "install <app> <repo>"
     .description "Install given application from its repository"
     .action (app, repo) ->
-        program.password "Cozy password:", (password) ->
+        options =
+            type: 'password'
+            name: 'password'
+            message: 'Cozy password'
+        inquirer.prompt options, (answers) ->
+            {password} = answers
             appManager.installApp app, program.url, repo, password, ->
                 log.info "#{app} successfully installed.".green
 
@@ -50,7 +56,12 @@ program
     .command "uninstall <app>"
     .description "Uninstall given application"
     .action (app) ->
-        program.password "Cozy password:", (password) ->
+        options =
+            type: 'password'
+            name: 'password'
+            message: 'Cozy password'
+        inquirer.prompt options, (answers) ->
+            {password} = answers
             appManager.uninstallApp app, program.url, password, ->
                 log.info "#{app} successfully uninstalled.".green
 
@@ -59,7 +70,12 @@ program
     .description(
         "Update application (git + npm install) and restart it through haibu")
     .action (app) ->
-        program.password "Cozy password:", (password) ->
+        options =
+            type: 'password'
+            name: 'password'
+            message: 'Cozy password'
+        inquirer.prompt options, (answers) ->
+            {password} = answers
             appManager.updateApp app, program.url, password, ->
                 log.info "#{app} successfully updated.".green
 
@@ -67,7 +83,12 @@ program
     .command "status"
     .description "Give current state of cozy platform applications"
     .action ->
-        program.password "Cozy password:", (password) ->
+        options =
+            type: 'password'
+            name: 'password'
+            message: 'Cozy password'
+        inquirer.prompt options, (answers) ->
+            {password} = answers
             appManager.checkStatus program.url, password, ->
                 log.info "All apps have been checked.".green
 
@@ -80,8 +101,18 @@ program
 
         if user?
             log.info "Create repo #{appname} for user #{user}..."
-            program.password "Github password:", (password) ->
-                program.prompt "Cozy Url:", (url) ->
+            options =
+                type: 'password'
+                name: 'password'
+                message: 'Github password'
+            inquirer.prompt options, (answers) ->
+                {password} = answers
+                options =
+                    type: 'input'
+                    name: 'url'
+                    message: 'Cozy URL'
+                inquirer.prompt options, (answers) ->
+                    {url} = answers
                     projectManager.newProject(appname, isCoffee, \
                                               url, user, password, ->
                         log.info "Project creation finished.".green
@@ -98,7 +129,13 @@ program
                  "to Cozy Cloud url configured in configuration file."
     .action ->
         config = require path.join(process.cwd(), ".cozy_conf.json")
-        program.password "Cozy password:", (password) ->
+
+        options =
+            type: 'password'
+            name: 'password'
+            message: 'Cozy password'
+        inquirer.prompt options, (answers) ->
+            {password} = answers
             projectManager.deploy config, password, ->
                 log.info "#{config.cozy.appName} successfully deployed.".green
 
@@ -124,13 +161,17 @@ program
                          "your computer. All data will be lost and a new " + \
                          "import will be required if you want to use the " + \
                          "VM again. [y/n]"
-        program.confirm confirmMessage, (ok) ->
-            if ok
+        options =
+            type: 'confirm'
+            name: 'hasConfirm'
+            message: confirmMessage
+            default: true
+        inquirer.prompt options, (answers) ->
+            if answers.hasConfirm
                 vagrantManager.vagrantBoxDestroy ->
                     msg = "The box has been successfully destroyed. Use " + \
                             "cozy dev:init to be able to use the VM again."
                     log.info msg.green
-                    # dirty fix because program.confirm seems to be buggy
                     process.exit()
 
 program
