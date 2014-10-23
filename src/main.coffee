@@ -130,7 +130,7 @@ program
         log.info "#{config.cozy.appName} successfully deployed.".green
 
 program
-.command "dev:init"
+.command "vm:init"
 .description "Initialize the current folder to host a virtual machine " + \
              "with Vagrant. This will download the base box file."
 .action ->
@@ -146,7 +146,7 @@ program
         log.info msg.green
 
 program
-.command "dev:destroy"
+.command "vm:destroy"
 .description "Destroy the virtual machine. Data will be lost."
 .action ->
     confirmMessage = "You are about to remove the virtual machine from " + \
@@ -169,11 +169,11 @@ program
             else cb()
     ], ->
         msg = "The box has been successfully destroyed. Use " + \
-                "cozy dev:init to be able to use the VM again."
+                "cozy vm:init to be able to use the VM again."
         log.info msg.green
         process.exit()
 program
-.command "dev:start"
+.command "vm:start"
 .description "Starts the virtual machine with Vagrant."
 .action ->
     async.series [
@@ -187,7 +187,7 @@ program
         if code is 0
             msg = "The virtual machine has been successfully started. " + \
                   "You can check everything is working by running cozy " + \
-                  "dev:vm-status."
+                  "vm:vm-status."
             log.info msg.green
         else
             msg = "An error occurred while your VMs was starting."
@@ -196,7 +196,7 @@ program
 haltOption = "Properly stop the virtual machine instead of simply " + \
              "suspending its execution"
 program
-.command "dev:stop"
+.command "vm:stop"
 .option "-H, --halt", haltOption
 .description "Stops the Virtual machine with Vagrant."
 .action ->
@@ -221,7 +221,7 @@ program
             msg = "An error occurred while your VMs was shutting down."
             log.error msg.red
 program
-.command "dev:vm-status"
+.command "vm:status"
 .description "Tells which services of the VM are running and accessible."
 .action ->
     async.series [
@@ -236,7 +236,7 @@ program
             log.error "One or more services are not running.".red
 
 program
-.command "dev:update"
+.command "vm:update"
 .description "Updates the virtual machine with the latest version of " + \
              "the cozy PaaS and core applications"
 .action ->
