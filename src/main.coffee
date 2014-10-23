@@ -146,33 +146,6 @@ program
         log.info msg.green
 
 program
-.command "vm:destroy"
-.description "Destroy the virtual machine. Data will be lost."
-.action ->
-    confirmMessage = "You are about to remove the virtual machine from " + \
-                     "your computer. All data will be lost and a new " + \
-                     "import will be required if you want to use the " + \
-                     "VM again"
-
-    async.waterfall [
-        (cb) ->
-            options =
-                type: 'confirm'
-                name: 'hasConfirm'
-                message: confirmMessage
-                default: true
-            inquirer.prompt options, (answers) -> cb null, answers.hasConfirm
-
-        (hasConfirm, cb) ->
-            if answers.hasConfirm
-                vagrantManager.vagrantBoxDestroy cb
-            else cb()
-    ], ->
-        msg = "The box has been successfully destroyed. Use " + \
-                "cozy vm:init to be able to use the VM again."
-        log.info msg.green
-        process.exit()
-program
 .command "vm:start"
 .description "Starts the virtual machine with Vagrant."
 .action ->
@@ -250,6 +223,34 @@ program
             log.info "VM updated.".green
         else
             log.error "An error occurred while updating the VM".red
+
+program
+.command "vm:destroy"
+.description "Destroy the virtual machine. Data will be lost."
+.action ->
+    confirmMessage = "You are about to remove the virtual machine from " + \
+                     "your computer. All data will be lost and a new " + \
+                     "import will be required if you want to use the " + \
+                     "VM again"
+
+    async.waterfall [
+        (cb) ->
+            options =
+                type: 'confirm'
+                name: 'hasConfirm'
+                message: confirmMessage
+                default: true
+            inquirer.prompt options, (answers) -> cb null, answers.hasConfirm
+
+        (hasConfirm, cb) ->
+            if answers.hasConfirm
+                vagrantManager.vagrantBoxDestroy cb
+            else cb()
+    ], ->
+        msg = "The box has been successfully destroyed. Use " + \
+                "cozy vm:init to be able to use the VM again."
+        log.info msg.green
+        process.exit()
 
 program
 .command "*"
