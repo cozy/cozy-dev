@@ -2,7 +2,7 @@ require 'colors'
 program = require 'commander'
 path = require 'path'
 log = require('printit')
-    prefix: 'cozy-dev  '
+    prefix: 'cozy-dev   '
 inquirer = require 'inquirer'
 async = require 'async'
 
@@ -160,7 +160,7 @@ program
         if code is 0
             msg = "The virtual machine has been successfully started. " + \
                   "You can check everything is working by running cozy " + \
-                  "vm:vm-status."
+                  "vm:status."
             log.info msg.green
         else
             msg = "An error occurred while your VMs was starting."
