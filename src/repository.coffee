@@ -55,7 +55,7 @@ class exports.RepoManager
             if code is 0
                 log.info "Project structure created.".green
             else
-                msg = "An error occurrend during project structure creation"
+                msg = "An error occurred during project structure creation"
                 log.error msg.red
             callback()
 
