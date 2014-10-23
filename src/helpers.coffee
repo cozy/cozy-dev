@@ -2,7 +2,7 @@
 os = require 'os'
 util = require 'util'
 log = require('printit')
-    prefix: 'cozy-dev'
+    prefix: 'helpers    '
 inquirer = require 'inquirer'
 
 # Execute sequentially given shell commands with "spawn"
@@ -43,4 +43,5 @@ module.exports.promptPassword = (name) -> (cb) ->
         type: 'password'
         name: 'password'
         message: name
-    inquirer.prompt options, (answers) -> cb null, answers.password
+    inquirer.prompt options, (answers) ->
+        cb null, answers.password

@@ -2,7 +2,7 @@ require 'colors'
 path = require 'path'
 fs = require 'fs'
 log = require('printit')
-    prefix: 'cozy-dev'
+    prefix: 'vagrant    '
 Client = require('request-json').JsonClient
 exec = require('child_process').exec
 compareVersions = require "mozilla-version-comparator"

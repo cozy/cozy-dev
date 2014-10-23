@@ -2,7 +2,7 @@ require 'colors'
 program = require 'commander'
 path = require 'path'
 log = require('printit')
-    prefix: 'cozy-dev'
+    prefix: 'cozy-dev  '
 inquirer = require 'inquirer'
 async = require 'async'
 
@@ -102,7 +102,7 @@ program
                 inquirer.prompt options, (answers) ->
                     cb null, password, answers.url
 
-            (url, password, cb) ->
+            (password, url, cb) ->
                 projectManager.newProject(appname, isCoffee, url, user, \
                                          password, cb)
 

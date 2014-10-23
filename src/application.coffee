@@ -1,7 +1,7 @@
 require 'colors'
 async = require 'async'
 log = require('printit')
-    prefix: 'cozy-dev'
+    prefix: 'application'
 
 helpers = require './helpers'
 

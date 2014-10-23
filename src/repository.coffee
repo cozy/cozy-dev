@@ -3,7 +3,7 @@ path = require 'path'
 fs = require 'fs'
 Client = require('request-json').JsonClient
 log = require('printit')
-    prefix: 'cozy-dev'
+    prefix: 'repository '
 
 helpers = require './helpers'
 
