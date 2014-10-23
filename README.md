@@ -25,10 +25,10 @@ Cozy Dev requires:
 Cozy Dev helps you to manage a virtual machine through Vagrant.
 
 ```
-cozy-dev dev:init
-cozy-dev dev:start
+cozy-dev vm:init
+cozy-dev vm:start
 
-cozy-dev dev:stop
+cozy-dev vm:stop
 ```
 
 More information about CozyCloud and virtual machines in [the documentation](http://cozy.io/hack/getting-started/setup-environment.html#for-applications-that-take-advantage-of-the-data-system).
