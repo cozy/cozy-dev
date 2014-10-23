@@ -172,8 +172,8 @@ program
 .command "vm:stop"
 .option "-H, --halt", haltOption
 .description "Stops the Virtual machine with Vagrant."
-.action ->
-    option = @args[0].halt
+.action (args) ->
+    option = args.halt or null
     if option? and option
         caller = vagrantManager.vagrantHalt
     else
