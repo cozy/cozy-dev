@@ -1,9 +1,11 @@
 require 'colors'
 path = require 'path'
 fs = require 'fs'
+log = require('printit')
+    prefix: 'vagrant    '
 Client = require('request-json').JsonClient
 exec = require('child_process').exec
-compareVersions = require("mozilla-version-comparator")
+compareVersions = require "mozilla-version-comparator"
 
 helpers = require './helpers'
 
@@ -22,21 +24,21 @@ class exports.VagrantManager
             if err
                 msg =  "Vagrant is required to use a virtual machine. " + \
                         "Please, refer to our documentation on #{@docURL}"
-                console.log msg.red
+                log.error msg.red
             else
                 versionMatch = stdout.match /Vagrant ([\d\.]+)/
                 if not versionMatch? or versionMatch.length isnt 2
                     msg = "Cannot correctly check the version using the " + \
                             "\"vagrant -v\" command. Please report an issue."
-                    console.log msg.red
-                    console.log "Output of \"vagrant -v\": #{stdout}.".red
+                    log.error msg.red
+                    log.error "Output of \"vagrant -v\":\n#{stdout}.".red
 
                 # If the installed version of Vagrant is older than the
                 # required one, raise an error (see issue #31)
                 else if ~compareVersions @minimumVagrantVersion, versionMatch[1]
                     msg = "cozy-dev requires Vagrant " + \
                             "#{@minimumVagrantVersion} or later."
-                    console.log msg.red
+                    log.error msg.red
                 else
                     callback() if callback?
 
@@ -48,7 +50,7 @@ class exports.VagrantManager
         helpers.spawnUntilEmpty cmds, ->
             msg = "The base box has been added to your environment or is " + \
                   "already installed."
-            console.log msg.green
+            log.info msg.green
             callback() if callback?
 
     vagrantInit: (callback) ->
@@ -96,8 +98,8 @@ class exports.VagrantManager
         helpers.spawnUntilEmpty cmds, callback
 
     update: (callback) ->
-        console.log "Patching the updater and updating the VM..." + \
-                    "This may take a while..."
+        log.info "Patching the updater and updating the VM..." + \
+                 "This may take a while..."
         cmds = []
         cmds.push
             name: 'vagrant'
@@ -107,7 +109,7 @@ class exports.VagrantManager
                     "cozy-setup/master/dev/update-devenv.sh"
         cmds.push
             name: 'vagrant'
-            args: ['ssh', '-c', 'curl -Of ' + scriptUrl ]
+            args: ['ssh', '-c', "curl -Of #{scriptUrl}"]
         cmds.push
             name: 'vagrant'
             args: ['ssh', '-c', 'chmod u+x ~/update-devenv.sh']
@@ -119,25 +121,25 @@ class exports.VagrantManager
             helpers.spawnUntilEmpty cmds, callback
 
     importVagrantFile: (callback) ->
-        console.log "Importing latest Vagrantfile version..."
+        log.info "Importing latest Vagrantfile version..."
         url = "cozy/cozy-setup/master/dev/Vagrantfile"
         client = new Client "https://raw.githubusercontent.com/"
         client.saveFile url, './Vagrantfile', (err, res, body) ->
             if err
                 msg = "An error occurrend while retrieving the Vagrantfile."
-                console.log msg.red
+                log.error msg.red
             else
-                console.log "Vagrantfile successfully upgraded.".green
+                log.info "Vagrantfile successfully upgraded.".green
 
             callback() if callback?
 
     virtualMachineStatus: (callback) ->
         url = "http://localhost:9104"
-        console.log "Checking status on #{url}..."
+        log.info "Checking status on #{url}..."
         client = new Client url
         client.get '/status', (err, res, body) ->
             if err
-                callback(1)
+                callback 1
             else
                 isOkay = 0
                 for app, status of body
@@ -146,5 +148,5 @@ class exports.VagrantManager
                     else
                         formattedStatus = "ko".red
                         isOkay = 1 if app isnt "registered"
-                    console.log "\t* #{app}: #{formattedStatus}"
-                callback(isOkay)
+                    log.info "\t* #{app}: #{formattedStatus}"
+                callback isOkay

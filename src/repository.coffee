@@ -2,6 +2,9 @@ require 'colors'
 path = require 'path'
 fs = require 'fs'
 Client = require('request-json').JsonClient
+log = require('printit')
+    prefix: 'repository '
+
 helpers = require './helpers'
 
 class exports.RepoManager
@@ -19,47 +22,41 @@ class exports.RepoManager
         cmds.push
             name: "git"
             args: ['clone', repo,  appname]
-            opts:
-                cwd: process.cwd()
+            opts: cwd: process.cwd()
         cmds.push
             name: "git"
             args: ['submodule', 'update', '--init', '--recursive']
-            opts:
-                cwd: appPath
+            opts: cwd: appPath
 
         if helpers.isRunningOnWindows()
             removeGitFolderCommand =
                 name: "rmdir"
                 args: ['/S', '/Q', '.git']
-                opts:
-                    cwd: appPath
+                opts: cwd: appPath
         else
             removeGitFolderCommand =
                 name: "rm"
                 args: ['-rf', '.git']
-                opts:
-                    cwd: appPath
+                opts: cwd: appPath
         cmds.push removeGitFolderCommand
 
         cmds.push
             name: "npm"
             args: ['install']
-            opts:
-                cwd: appPath
+            opts: cwd: appPath
         cmds.push
             name: "npm"
             args: ['install']
-            opts:
-                cwd: "#{appPath}/client"
+            opts: cwd: "#{appPath}/client"
 
-        console.log "Creating the project structure..."
+        log.info "Creating the project structure..."
 
         helpers.spawnUntilEmpty cmds, (code) ->
             if code is 0
-                console.log "Project structure created.".green
+                log.info "Project structure created.".green
             else
-                msg = "An error occurrend during project structure creation"
-                console.log msg.red
+                msg = "An error occurred during project structure creation"
+                log.error msg.red
             callback()
 
     connectRepos: (user, appname, callback) ->
@@ -68,34 +65,29 @@ class exports.RepoManager
         cmds.push
             name: "git"
             args: ['init']
-            opts:
-                cwd: appPath
+            opts: cwd: appPath
         remoteRepository = "git@github.com:#{user}/#{appname}.git"
         cmds.push
             name: "git"
             args: ['remote', 'add', 'origin', remoteRepository]
-            opts:
-                cwd: appPath
+            opts: cwd: appPath
         cmds.push
             name: "git"
             args: ['add', '.']
-            opts:
-                cwd: appPath
+            opts: cwd: appPath
         cmds.push
             name: "git"
             args: ['commit', '-a', '-m', '"First commit."']
-            opts:
-                cwd: appPath
+            opts: cwd: appPath
         cmds.push
             name: "git"
             args: ['push', 'origin', '-u', 'master']
-            opts:
-                cwd: appPath
+            opts: cwd: appPath
 
         helpers.spawnUntilEmpty cmds, ->
             msg = "The project has been successfully linked to a Github " + \
                   "repository."
-            console.log msg.green
+            log.info msg.green
             callback()
 
     createGithubRepo: (credentials, repo, callback) ->
@@ -103,11 +95,11 @@ class exports.RepoManager
         client.setBasicAuth credentials.username, credentials.password
         client.post 'user/repos', name: repo, (err, res, body) ->
             if err
-                console.log "An error occured while creating repository.".red
-                console.log err
+                log.error "An error occured while creating repository.".red
+                log.error err
             else if res.statusCode isnt 201
-                console.log "Cannot create repository on Github.".red
-                console.log body
+                log.error "Cannot create repository on Github.".red
+                log.error body
             else
                 callback()
 
@@ -126,8 +118,8 @@ class exports.RepoManager
             }
         """
         fs.writeFile path.join(app, '.cozy_conf.json'), data, (err) ->
-            if err
-                console.log err.red
+            if err?
+                log.error err.red
             else
-                console.log "Config file successfully saved.".green
+                log.info "Config file successfully saved.".green
                 callback()
