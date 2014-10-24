@@ -243,7 +243,7 @@ program
             inquirer.prompt options, (answers) -> cb null, answers.hasConfirm
 
         (hasConfirm, cb) ->
-            if answers.hasConfirm
+            if hasConfirm
                 vagrantManager.vagrantBoxDestroy cb
             else cb()
     ], ->
