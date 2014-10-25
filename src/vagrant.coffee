@@ -17,7 +17,7 @@ class exports.VagrantManager
         @docURL = "http://cozy.io/hack/getting-started/setup-environment.html"
 
         # Minimum required version to make Vagrant work with cozy-dev
-        @minimumVagrantVersion = "1.5.0"
+        @minimumVagrant = "1.5.0"
 
     checkIfVagrantIsInstalled: (callback) ->
         exec "vagrant -v", (err, stdout, stderr) =>
@@ -35,9 +35,9 @@ class exports.VagrantManager
 
                 # If the installed version of Vagrant is older than the
                 # required one, raise an error (see issue #31)
-                else if ~compareVersions @minimumVagrantVersion, versionMatch[1]
+                else if compareVersions(@minimumVagrant, versionMatch[1]) > 0
                     msg = "cozy-dev requires Vagrant " + \
-                            "#{@minimumVagrantVersion} or later."
+                            "#{@minimumVagrant} or later."
                     log.error msg.red
                 else
                     callback() if callback?
