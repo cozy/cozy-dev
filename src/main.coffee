@@ -39,16 +39,6 @@ program
 .option '-c, --coffee', 'Create app template with coffee script files ' + \
         'instead of JS files'
 
-program
-.command "install <app> <repo>"
-.description "Install given application from its repository"
-.action (app, repo) ->
-    async.waterfall [
-        helpers.promptPassword 'Cozy password'
-        (password, cb) ->
-            appManager.installApp app, program.url, repo, password, cb
-    ], ->
-        log.info "#{app} successfully installed.".green
 
 program
 .command "uninstall <app>"
@@ -59,6 +49,7 @@ program
         (password, cb) -> appManager.uninstallApp app, program.url, password, cb
     ], ->
         log.info "#{app} successfully uninstalled.".green
+
 
 program
 .command "update <app>"
@@ -72,15 +63,6 @@ program
     ], ->
         log.info "#{app} successfully updated.".green
 
-program
-.command "status"
-.description "Give current state of cozy platform applications"
-.action ->
-    async.waterfall [
-        helpers.promptPassword 'Cozy password'
-        (password, cb) -> appManager.checkStatus program.url, password, cb
-    ], ->
-        log.info "All apps have been checked.".green
 
 program
 .command "new <appname>"
