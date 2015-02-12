@@ -207,6 +207,40 @@ program
             log.error "An error occurred while updating the VM".red
 
 program
+.command "vm:update-image"
+.description "Updates the virtual machine with the latest version of " + \
+             "the cozy PaaS and core applications"
+.action ->
+    confirmMessage = "You are about to update image of the virtual machine." + \
+                     " All your data will be lost. Are you sure ?"
+    options =
+        type: 'confirm'
+        name: 'hasConfirm'
+        message: confirmMessage
+        default: true
+    inquirer.prompt options, (answers) ->
+        if answers.hasConfirm
+            async.series [
+                (cb) -> vagrantManager.checkIfVagrantIsInstalled cb
+                (cb) ->
+                    log.info "Destroy the old virtual machine..."
+                    vagrantManager.vagrantBoxDestroy cb
+                (cb) ->
+                    log.info "Init the new virtual machine..."
+                    vagrantManager.vagrantBoxAdd cb
+                (cb) -> vagrantManager.vagrantInit cb
+                (cb) ->
+                    log.info "Start the new virtual machine..."
+                    vagrantManager.vagrantUp (code) -> cb null, code
+            ], (err, results) ->
+                if err
+                    log.info err
+                    log.error "An error occurred while updating the VM".red
+                else
+                    log.info "VM updated.".green
+
+
+program
 .command "vm:destroy"
 .description "Destroy the virtual machine. Data will be lost."
 .action ->

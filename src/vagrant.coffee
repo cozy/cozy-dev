@@ -65,10 +65,10 @@ class exports.VagrantManager
         cmds = []
         cmds.push
             name: 'vagrant'
-            args: ['--force', 'destroy']
+            args: ['destroy', '--force']
         cmds.push
             name: 'vagrant'
-            args: ['box', 'remove', 'cozycloud-dev-latest']
+            args: ['box', 'remove', 'cozycloud/cozy-dev']
         cmds.push
             name: 'rm'
             args: ['-rf', 'Vagrantfile']
@@ -81,7 +81,10 @@ class exports.VagrantManager
         cmds.push
             name: 'vagrant'
             args: ['up']
-        helpers.spawnUntilEmpty cmds, callback
+        helpers.spawnUntilEmpty cmds, (code) ->
+            log.info "Checking status ..."
+            helpers.isStarted () ->
+                callback code
 
     vagrantHalt: (callback)  ->
         cmds = []
