@@ -24,12 +24,12 @@ module.exports.spawnUntilEmpty = (commands, callback) ->
     command.stdout.on 'data',  (data) ->
         log = require('printit')
             prefix: '(spawn)    '
-        log.info "#{data}"
+        log.info "#{data}".replace(/\n/g, '')
 
     command.stderr.on 'data', (data) ->
         log = require('printit')
             prefix: '(spawn)   '
-        log.error "#{data}"
+        log.error "#{data}".replace(/\n/g, '')
 
     command.on 'close', (code, signal) ->
         if commands.length > 0 and code is 0
