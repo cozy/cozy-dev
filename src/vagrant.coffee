@@ -142,11 +142,11 @@ class exports.VagrantManager
                 callback 1
             else
                 isOkay = 0
-                for app, status of body
+                for app, status of body when app not in ['registered']
                     if status is true
                         formattedStatus = "ok".green
                     else
                         formattedStatus = "ko".red
-                        isOkay = 1 if app isnt "registered"
+                        isOkay = 1
                     log.info "\t* #{app}: #{formattedStatus}"
                 callback isOkay
