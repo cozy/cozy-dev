@@ -19,12 +19,14 @@ client = new Client ""
 
 RepoManager = require('./repository').RepoManager
 repoManager = new RepoManager()
-ApplicationManager = new require('./application').ApplicationManager
+ApplicationManager = require('./application').ApplicationManager
 appManager = new ApplicationManager()
-ProjectManager = new require('./project').ProjectManager
+ProjectManager = require('./project').ProjectManager
 projectManager = new ProjectManager()
-VagrantManager = new require('./vagrant').VagrantManager
+VagrantManager = require('./vagrant').VagrantManager
 vagrantManager = new VagrantManager()
+DatabaseManager = require('./database')
+databaseManager = new DatabaseManager()
 
 helpers = require './helpers'
 
@@ -234,11 +236,49 @@ program
         log.info msg.green
         process.exit()
 
+
+program
+.command "db:switch [dbname]"
+.description "Change the database used by Cozy's data system (default: cozy)."
+.action (dbname) ->
+    dbname = dbname or 'cozy'
+    databaseManager.switch dbname, (err) ->
+        returnCode = if err? then 1 else 0
+        process.exit returnCode
+
+
+program
+.command "db:reset <dbname>"
+.description "Reset the given database (will destroy all data)."
+.option "-f, --force", "Bypass the confirmation message. USE AT YOUR OWN RISK."
+.action (dbname, args) ->
+
+    processReset = ->
+        databaseManager.reset dbname, (err) ->
+            returnCode = if err? then 1 else 0
+            process.exit returnCode
+
+    if args.force?
+        processReset()
+    else
+        confirmMessage = "You are about to reset the database #{dbname}. " + \
+                         "All data will be lost. Are you sure?"
+        options =
+            type: 'confirm'
+            name: 'hasConfirmed'
+            message: confirmMessage
+            default: true
+        inquirer.prompt options, (answers) ->
+            if answers.hasConfirmed
+                processReset()
+            else
+                process.exit 0
+
 program
 .command "*"
 .description "Display error message for an unknown command."
 .action ->
-    log.error 'Unknown command, run "cozy --help" to know the list of ' + \
+    log.error 'Unknown command, run "cozy-dev --help" to know the list of ' + \
               'available commands.'
 
 program.parse process.argv
