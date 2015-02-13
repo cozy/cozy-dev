@@ -1,8 +1,5 @@
 {spawn} = require 'child_process'
 os = require 'os'
-util = require 'util'
-log = require('printit')
-    prefix: 'helpers    '
 inquirer = require 'inquirer'
 
 # Execute sequentially given shell commands with "spawn"
@@ -25,10 +22,14 @@ module.exports.spawnUntilEmpty = (commands, callback) ->
         commandDescriptor.args.unshift '/C'
 
     command.stdout.on 'data',  (data) ->
-        util.print "#{data}"
+        log = require('printit')
+            prefix: '(spawn)    '
+        log.info "#{data}"
 
     command.stderr.on 'data', (data) ->
-        util.print "#{data}"
+        log = require('printit')
+            prefix: '(spawn)   '
+        log.error "#{data}"
 
     command.on 'close', (code, signal) ->
         if commands.length > 0 and code is 0
