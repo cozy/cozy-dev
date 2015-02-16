@@ -2,6 +2,9 @@ require 'colors'
 async = require 'async'
 log = require('printit')
     prefix: 'application'
+spawn = require('child_process').spawn
+path = require 'path'
+ps = require 'ps-node'
 
 helpers = require './helpers'
 
@@ -97,3 +100,48 @@ class exports.ApplicationManager
                     callback err, false
                 else
                     callback null, true
+
+    addInDatabase: (manifest, callback) ->
+        dsClient = new Client 'http://localhost:9101'
+        dsClient.post 'data/', manifest, (err, res, body) ->
+            callback err
+
+    resetProxy: (callback) ->
+        proxyClient = new Client 'http://localhost:9104'
+        proxyClient.get 'routes/reset', (err, res, body) ->
+            callback err
+
+    removeFromDatabase: (manifest, callback) ->
+        dsClient = new Client 'http://localhost:9101'
+        dsClient.post 'request/application/byslug/', {key: manifest.slug}, (err, res, body) ->
+            app = body[0].value
+            port = app.port
+            dsClient.del "data/#{app._id}/", (err, res, body) ->
+                callback err, port
+
+    addPortForwarding: (port, callback) ->
+        options=
+            detached: true
+            stdio: ['ignore', 'ignore', 'ignore']
+        path = path.join(__dirname, '..', '.vagrant', 'machines', 'default', 'virtualbox', 'private_key')
+        command = 'ssh'
+        args = ['-f', '-N', 'vagrant@127.0.0.1']
+        args = args.concat ['-R', "#{port}:localhost:#{port}"]
+        args = args.concat ['-p', '2222']
+        args = args.concat ['-o', "IdentityFile=#{path}"]
+        args = args.concat ['-o','UserKnownHostsFile=/dev/null']
+        args = args.concat ['-o', 'StrictHostKeyChecking=no']
+        args = args.concat ['-o', 'PasswordAuthentication=no']
+        args = args.concat ['-o', 'IdentitiesOnly=yes']
+        child = spawn command, args, options
+        child.unref()
+        callback()
+
+    removePortForwarding: (port, callback) ->
+        options =
+            command: 'ssh'
+            psargs: '-e u'
+        ps.lookup options, (err, results) =>
+            for process in results
+                if "#{port}:localhost:#{port}" in process.arguments
+                    ps.kill process.pid, callback

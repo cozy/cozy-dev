@@ -97,19 +97,35 @@ program
             log.info "Project creation finished.".green
 
 program
-.command "deploy"
+.command "deploy [port]"
 .description "Push code and deploy app located in current directory " + \
-             "to Cozy Cloud url configured in configuration file."
-.action ->
-    config = require path.join(process.cwd(), ".cozy_conf.json")
+             "to you virtualbox."
+.action (port) ->
+    unless port?
+        port = 9250
+    # Install application for cozy stack
+    projectManager.recoverManifest port, (err, manifest) ->
+        return console.log err if err?
+        appManager.addInDatabase manifest, (err) ->
+            return console.log err if err?
+            appManager.resetProxy (err) ->
+                return console.log err if err?
+                appManager.addPortForwarding port, (err) ->
+                    return console.log err if err?
 
-    async.waterfall [
-        helpers.promptPassword 'Cozy password'
-
-        (password, cb) ->
-            projectManager.deploy config, password, cb
-    ], ->
-        log.info "#{config.cozy.appName} successfully deployed.".green
+program
+.command "undeploy"
+.description "Undeploy application"
+.action () ->
+    # Uninstall application for cozy stack
+    projectManager.recoverManifest 9250, (err, manifest) ->
+        return console.log err if err?
+        appManager.removeFromDatabase manifest, (err, port) ->
+            return console.log err if err?
+            appManager.resetProxy (err) ->
+                return console.log err if err?
+                appManager.removePortForwarding port, (err) ->
+                    return console.log err if err?
 
 program
 .command "vm:init"
