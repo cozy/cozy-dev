@@ -140,16 +140,26 @@ class exports.VagrantManager
         url = "http://localhost:9104"
         log.info "Checking status on #{url}..."
         client = new Client url
+        portInfo =
+            couchdb: 5984
+            datasystem: 9101
+            controller: 9002
+            indexer: 9102
+            proxy: 9104
         client.get '/status', (err, res, body) ->
             if err
                 callback 1
             else
                 isOkay = 0
-                for app, status of body
+                for app, status of body when app not in ['registered']
                     if status is true
                         formattedStatus = "ok".green
                     else
                         formattedStatus = "ko".red
-                        isOkay = 1 if app isnt "registered"
-                    log.info "\t* #{app}: #{formattedStatus}"
+                        isOkay = 1
+
+                    info = portInfo[app]
+                    info = if info? then " (port: #{info})" else ""
+
+                    log.info "\t* #{app}#{info}: #{formattedStatus}"
                 callback isOkay
