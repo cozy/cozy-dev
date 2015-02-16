@@ -4,8 +4,8 @@ log = require('printit')
     prefix: 'application'
 spawn = require('child_process').spawn
 path = require 'path'
-ps = require 'ps-node'
 
+fs = require 'fs'
 helpers = require './helpers'
 
 Client = require("request-json").JsonClient
@@ -116,32 +116,32 @@ class exports.ApplicationManager
         dsClient.post 'request/application/byslug/', {key: manifest.slug}, (err, res, body) ->
             app = body[0].value
             port = app.port
+            name = app.name
             dsClient.del "data/#{app._id}/", (err, res, body) ->
-                callback err, port
+                callback err, name, port
 
-    addPortForwarding: (port, callback) ->
+    addPortForwarding: (name, port, callback) ->
         options=
             detached: true
             stdio: ['ignore', 'ignore', 'ignore']
-        path = path.join(__dirname, '..', '.vagrant', 'machines', 'default', 'virtualbox', 'private_key')
+        filePath = path.join(__dirname, '..', '.vagrant', 'machines', 'default', 'virtualbox', 'private_key')
         command = 'ssh'
-        args = ['-f', '-N', 'vagrant@127.0.0.1']
+        args = ['-N', 'vagrant@127.0.0.1']
         args = args.concat ['-R', "#{port}:localhost:#{port}"]
         args = args.concat ['-p', '2222']
-        args = args.concat ['-o', "IdentityFile=#{path}"]
+        args = args.concat ['-o', "IdentityFile=#{filePath}"]
         args = args.concat ['-o','UserKnownHostsFile=/dev/null']
         args = args.concat ['-o', 'StrictHostKeyChecking=no']
         args = args.concat ['-o', 'PasswordAuthentication=no']
         args = args.concat ['-o', 'IdentitiesOnly=yes']
         child = spawn command, args, options
+        pid = child.pid
         child.unref()
+        fs.openSync path.join(__dirname, '..', "#{name}.pid"), 'w'
+        fs.writeFileSync path.join(__dirname, '..', "#{name}.pid"), pid
         callback()
 
-    removePortForwarding: (port, callback) ->
-        options =
-            command: 'ssh'
-            psargs: '-e u'
-        ps.lookup options, (err, results) =>
-            for process in results
-                if "#{port}:localhost:#{port}" in process.arguments
-                    ps.kill process.pid, callback
+    removePortForwarding: (name, port, callback) ->
+        pid = fs.readFileSync path.join(__dirname, '..', "#{name}.pid"), 'utf8'
+        process.kill(pid)
+        callback()

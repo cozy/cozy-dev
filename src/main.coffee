@@ -110,7 +110,7 @@ program
             return console.log err if err?
             appManager.resetProxy (err) ->
                 return console.log err if err?
-                appManager.addPortForwarding port, (err) ->
+                appManager.addPortForwarding manifest.name, port, (err) ->
                     return console.log err if err?
 
 program
@@ -120,11 +120,11 @@ program
     # Uninstall application for cozy stack
     projectManager.recoverManifest 9250, (err, manifest) ->
         return console.log err if err?
-        appManager.removeFromDatabase manifest, (err, port) ->
+        appManager.removeFromDatabase manifest, (err, name, port) ->
             return console.log err if err?
             appManager.resetProxy (err) ->
                 return console.log err if err?
-                appManager.removePortForwarding port, (err) ->
+                appManager.removePortForwarding name, port, (err) ->
                     return console.log err if err?
 
 program
