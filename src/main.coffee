@@ -138,13 +138,14 @@ program
         (cb) ->
             log.info "Starting the virtual machine...this may take a while."
             vagrantManager.vagrantUp (code) -> cb null, code
+        (cb) ->
+            setTimeout cb, 30000
+        (cb) -> vagrantManager.virtualMachineStatus (status) -> cb()
     ], (err, results) ->
         [_, code] = results
 
         if code is 0
-            msg = "The virtual machine has been successfully started. " + \
-                  "You can check everything is working by running cozy " + \
-                  "vm:status."
+            msg = "The virtual machine has been successfully started."
             log.info msg.green
         else
             msg = "An error occurred while your VMs was starting."
