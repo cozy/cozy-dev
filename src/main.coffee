@@ -98,20 +98,66 @@ program
         repoManager.createLocalRepo appname, isCoffee, ->
             log.info "Project creation finished.".green
 
+# Install application for cozy stack
 program
-.command "deploy"
+.command "deploy [port]"
 .description "Push code and deploy app located in current directory " + \
-             "to Cozy Cloud url configured in configuration file."
-.action ->
-    config = require path.join(process.cwd(), ".cozy_conf.json")
+             "to you virtualbox."
+.action (port) ->
+    port = 9250 unless port?
+    # Recover manifest
+    projectManager.recoverManifest port, (err, app) ->
+        return console.log err if err?
 
-    async.waterfall [
-        helpers.promptPassword 'Cozy password'
+        if app.name in ['home', 'data-system', 'proxy']
+            # Stack application
+            async.series [
+                (cb) -> appManager.stopApp app.name, cb
+                (cb) -> appManager.addPortForwarding app.name, app.port, cb
+            ], (err) ->
+                return console.log err if err?
+                msg = "Application deployed in virtual machine."
+                log.info msg.green
 
-        (password, cb) ->
-            projectManager.deploy config, password, cb
-    ], ->
-        log.info "#{config.cozy.appName} successfully deployed.".green
+        else
+            # User application
+            async.series [
+                (cb) -> appManager.addInDatabase app, cb
+                (cb) -> appManager.resetProxy cb
+                (cb) -> appManager.addPortForwarding app.name, app.port, cb
+            ], (err) ->
+                return console.log err if err?
+                msg = "Application deployed in virtual machine."
+                log.info msg.green
+
+# Uninstall application for cozy stack
+program
+.command "undeploy"
+.description "Undeploy application"
+.action () ->
+    # Recover manifest
+    projectManager.recoverManifest 9250, (err, app) ->
+        return console.log err if err?
+
+        if app.name in ['home', 'data-system', 'proxy']
+            # Stack application
+            async.series [
+                (cb) -> appManager.removePortForwarding app.name, app.port, cb
+                (cb) -> appManager.startApp app.name, cb
+            ], (err) ->
+                return console.log err if err?
+                msg = "Application undeployed in virtual machine."
+                log.info msg.green
+        else
+            # User application
+            async.series [
+                (cb) -> appManager.removeFromDatabase app, cb
+                (cb) -> appManager.resetProxy cb
+                (cb) -> appManager.removePortForwarding app.name, app.port, cb
+            ], (err) ->
+                return console.log err if err?
+                msg = "Application undeployed in virtual machine."
+                log.info msg.green
 
 program
 .command "vm:init"
@@ -138,8 +184,6 @@ program
         (cb) ->
             log.info "Starting the virtual machine...this may take a while."
             vagrantManager.vagrantUp (code) -> cb null, code
-        (cb) ->
-            setTimeout cb, 30000
         (cb) -> vagrantManager.virtualMachineStatus (status) -> cb()
     ], (err, results) ->
         [_, code] = results
@@ -208,6 +252,40 @@ program
             log.info "VM updated.".green
         else
             log.error "An error occurred while updating the VM".red
+
+program
+.command "vm:update-image"
+.description "Updates the virtual machine with the latest version of " + \
+             "the cozy PaaS and core applications"
+.action ->
+    confirmMessage = "You are about to update image of the virtual machine." + \
+                     " All your data will be lost. Are you sure ?"
+    options =
+        type: 'confirm'
+        name: 'hasConfirm'
+        message: confirmMessage
+        default: true
+    inquirer.prompt options, (answers) ->
+        if answers.hasConfirm
+            async.series [
+                (cb) -> vagrantManager.checkIfVagrantIsInstalled cb
+                (cb) ->
+                    log.info "Destroy the old virtual machine..."
+                    vagrantManager.vagrantBoxDestroy cb
+                (cb) ->
+                    log.info "Init the new virtual machine..."
+                    vagrantManager.vagrantBoxAdd cb
+                (cb) -> vagrantManager.vagrantInit cb
+                (cb) ->
+                    log.info "Start the new virtual machine..."
+                    vagrantManager.vagrantUp (code) -> cb null, code
+            ], (err, results) ->
+                if err
+                    log.info err
+                    log.error "An error occurred while updating the VM".red
+                else
+                    log.info "VM updated.".green
+
 
 program
 .command "vm:destroy"

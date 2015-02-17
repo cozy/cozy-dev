@@ -1,6 +1,7 @@
 {spawn} = require 'child_process'
 os = require 'os'
 inquirer = require 'inquirer'
+Client = require('request-json').JsonClient
 
 # Execute sequentially given shell commands with "spawn"
 # until there is no more command left. Spawn displays the output as it comes.
@@ -36,6 +37,18 @@ module.exports.spawnUntilEmpty = (commands, callback) ->
             module.exports.spawnUntilEmpty commands, callback
         else
             callback code
+
+
+isStarted = module.exports.isStarted = (callback) ->
+    url = "http://localhost:9104"
+    client = new Client url
+    client.get '/status', (err, res, body) ->
+        if err
+            setTimeout () ->
+                isStarted callback
+            , 1 * 1000
+        else
+            callback()
 
 module.exports.isRunningOnWindows = -> return os.platform().match /^win/
 

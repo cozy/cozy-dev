@@ -2,7 +2,10 @@ require 'colors'
 async = require 'async'
 log = require('printit')
     prefix: 'application'
+spawn = require('child_process').spawn
+path = require 'path'
 
+fs = require 'fs'
 helpers = require './helpers'
 
 Client = require("request-json").JsonClient
@@ -58,6 +61,24 @@ class exports.ApplicationManager
                 output = 'Uninstall failed.'.red
                 @checkError err, res, body, 200, output, callback
 
+    stopApp: (app, callback) ->
+        cmds = []
+        cmds.push
+            name: 'vagrant'
+            args: ['ssh', '-c', "cozy-monitor stop #{app}"]
+            opts:
+                'cwd': path.join __dirname, '..'
+        helpers.spawnUntilEmpty cmds, callback
+
+    startApp: (app, callback) ->
+        cmds = []
+        cmds.push
+            name: 'vagrant'
+            args: ['ssh', '-c', "cozy-monitor start #{app}"]
+            opts:
+                'cwd': path.join __dirname, '..'
+        helpers.spawnUntilEmpty cmds, callback
+
     checkStatus: (url, password, callback) ->
         checkApp = (app) =>
             (next) =>
@@ -97,3 +118,48 @@ class exports.ApplicationManager
                     callback err, false
                 else
                     callback null, true
+
+    addInDatabase: (manifest, callback) ->
+        dsClient = new Client 'http://localhost:9101'
+        dsClient.post 'data/', manifest, (err, res, body) ->
+            callback err
+
+    resetProxy: (callback) ->
+        proxyClient = new Client 'http://localhost:9104'
+        proxyClient.get 'routes/reset', (err, res, body) ->
+            callback err
+
+    removeFromDatabase: (manifest, callback) ->
+        dsClient = new Client 'http://localhost:9101'
+        dsClient.post 'request/application/byslug/', {key: manifest.slug}, (err, res, body) ->
+            app = body[0].value
+            port = app.port
+            name = app.name
+            dsClient.del "data/#{app._id}/", (err, res, body) ->
+                callback err
+
+    addPortForwarding: (name, port, callback) ->
+        options=
+            detached: true
+            stdio: ['ignore', 'ignore', 'ignore']
+        filePath = path.join(__dirname, '..', '.vagrant', 'machines', 'default', 'virtualbox', 'private_key')
+        command = 'ssh'
+        args = ['-N', 'vagrant@127.0.0.1']
+        args = args.concat ['-R', "#{port}:localhost:#{port}"]
+        args = args.concat ['-p', '2222']
+        args = args.concat ['-o', "IdentityFile=#{filePath}"]
+        args = args.concat ['-o','UserKnownHostsFile=/dev/null']
+        args = args.concat ['-o', 'StrictHostKeyChecking=no']
+        args = args.concat ['-o', 'PasswordAuthentication=no']
+        args = args.concat ['-o', 'IdentitiesOnly=yes']
+        child = spawn command, args, options
+        pid = child.pid
+        child.unref()
+        fs.open path.join(__dirname, '..', "#{name}.pid"), 'w', (err) ->
+            return callback err if err?
+            fs.writeFile path.join(__dirname, '..', "#{name}.pid"), pid, callback
+
+    removePortForwarding: (name, port, callback) ->
+        pid = fs.readFileSync path.join(__dirname, '..', "#{name}.pid"), 'utf8'
+        process.kill(pid)
+        callback()
