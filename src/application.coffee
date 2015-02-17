@@ -132,6 +132,7 @@ class exports.ApplicationManager
     removeFromDatabase: (manifest, callback) ->
         dsClient = new Client 'http://localhost:9101'
         dsClient.post 'request/application/byslug/', {key: manifest.slug}, (err, res, body) ->
+            return callback err if err? or not body?[0]?.value
             app = body[0].value
             port = app.port
             name = app.name
@@ -155,11 +156,23 @@ class exports.ApplicationManager
         child = spawn command, args, options
         pid = child.pid
         child.unref()
-        fs.open path.join(__dirname, '..', "#{name}.pid"), 'w', (err) ->
+        if helpers.isRunningOnWindows()
+            home = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE
+            file = path.join(home, "#{name}.pid")
+        else
+            file = path.join('/tmp', "#{name}.pid")
+        fs.open file, 'w', (err) ->
             return callback err if err?
-            fs.writeFile path.join(__dirname, '..', "#{name}.pid"), pid, callback
+            fs.writeFile file, pid, callback
 
     removePortForwarding: (name, port, callback) ->
-        pid = fs.readFileSync path.join(__dirname, '..', "#{name}.pid"), 'utf8'
-        process.kill(pid)
+        if helpers.isRunningOnWindows()
+            home = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE
+            file = path.join(home, "#{name}.pid")
+        else
+            file = path.join('/tmp', "#{name}.pid")
+        if fs.existsSync file
+            pid = fs.readFileSync file, 'utf8'
+            fs.unlink file
+            process.kill(pid)
         callback()
