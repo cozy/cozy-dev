@@ -1,6 +1,6 @@
 {
   "name": "cozy-dev",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "Tools to develop Cozy applications easily",
   "license": "LGPL v3",
   "main": "./lib/main",
