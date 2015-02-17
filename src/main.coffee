@@ -98,48 +98,66 @@ program
         repoManager.createLocalRepo appname, isCoffee, ->
             log.info "Project creation finished.".green
 
+# Install application for cozy stack
 program
 .command "deploy [port]"
 .description "Push code and deploy app located in current directory " + \
              "to you virtualbox."
 .action (port) ->
-    unless port?
-        port = 9250
-    # Install application for cozy stack
-    projectManager.recoverManifest port, (err, manifest) ->
+    port = 9250 unless port?
+    # Recover manifest
+    projectManager.recoverManifest port, (err, app) ->
         return console.log err if err?
-        if manifest.name in ['home', 'data-system', 'proxy']
-            # Stop app in vm
-            appManager.stopApp manifest.name, () ->
-                appManager.addPortForwarding manifest.name, manifest.port, (err) ->
-                    return console.log err if err?
-        else
-            appManager.addInDatabase manifest, (err) ->
-                return console.log err if err?
-                appManager.resetProxy (err) ->
-                    return console.log err if err?
-                    appManager.addPortForwarding manifest.name, port, (err) ->
-                        return console.log err if err?
 
+        if app.name in ['home', 'data-system', 'proxy']
+            # Stack application
+            async.series [
+                (cb) -> appManager.stopApp app.name, cb
+                (cb) -> appManager.addPortForwarding app.name, app.port, cb
+            ], (err) ->
+                return console.log err if err?
+                msg = "Application deployed in virtual machine."
+                log.info msg.green
+
+        else
+            # User application
+            async.series [
+                (cb) -> appManager.addInDatabase app, cb
+                (cb) -> appManager.resetProxy cb
+                (cb) -> appManager.addPortForwarding app.name, app.port, cb
+            ], (err) ->
+                return console.log err if err?
+                msg = "Application deployed in virtual machine."
+                log.info msg.green
+
+# Uninstall application for cozy stack
 program
 .command "undeploy"
 .description "Undeploy application"
 .action () ->
-    # Uninstall application for cozy stack
-    projectManager.recoverManifest 9250, (err, manifest) ->
+    # Recover manifest
+    projectManager.recoverManifest 9250, (err, app) ->
         return console.log err if err?
-        if manifest.name in ['home', 'data-system', 'proxy']
-            appManager.removePortForwarding manifest.name, manifest.port, (err) ->
+
+        if app.name in ['home', 'data-system', 'proxy']
+            # Stack application
+            async.series [
+                (cb) -> appManager.removePortForwarding app.name, app.port, cb
+                (cb) -> appManager.startApp app.name, cb
+            ], (err) ->
                 return console.log err if err?
-                # Restart application in vm
-                appManager.startApp manifest.name, ()->
+                msg = "Application undeployed in virtual machine."
+                log.info msg.green
         else
-            appManager.removeFromDatabase manifest, (err) ->
+            # User application
+            async.series [
+                (cb) -> appManager.removeFromDatabase app, cb
+                (cb) -> appManager.resetProxy cb
+                (cb) -> appManager.removePortForwarding app.name, app.port, cb
+            ], (err) ->
                 return console.log err if err?
-                appManager.resetProxy (err) ->
-                    return console.log err if err?
-                    appManager.removePortForwarding manifest.name, manifest.port, (err) ->
-                        return console.log err if err?
+                msg = "Application undeployed in virtual machine."
+                log.info msg.green
 
 program
 .command "vm:init"
