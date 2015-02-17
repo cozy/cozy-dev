@@ -108,12 +108,18 @@ program
     # Install application for cozy stack
     projectManager.recoverManifest port, (err, manifest) ->
         return console.log err if err?
-        appManager.addInDatabase manifest, (err) ->
-            return console.log err if err?
-            appManager.resetProxy (err) ->
-                return console.log err if err?
-                appManager.addPortForwarding manifest.name, port, (err) ->
+        if manifest.name in ['home', 'data-system', 'proxy']
+            # Stop app in vm
+            appManager.stopApp manifest.name, () ->
+                appManager.addPortForwarding manifest.name, manifest.port, (err) ->
                     return console.log err if err?
+        else
+            appManager.addInDatabase manifest, (err) ->
+                return console.log err if err?
+                appManager.resetProxy (err) ->
+                    return console.log err if err?
+                    appManager.addPortForwarding manifest.name, port, (err) ->
+                        return console.log err if err?
 
 program
 .command "undeploy"
@@ -122,12 +128,18 @@ program
     # Uninstall application for cozy stack
     projectManager.recoverManifest 9250, (err, manifest) ->
         return console.log err if err?
-        appManager.removeFromDatabase manifest, (err, name, port) ->
-            return console.log err if err?
-            appManager.resetProxy (err) ->
+        if manifest.name in ['home', 'data-system', 'proxy']
+            appManager.removePortForwarding manifest.name, manifest.port, (err) ->
                 return console.log err if err?
-                appManager.removePortForwarding name, port, (err) ->
+                # Restart application in vm
+                appManager.startApp manifest.name, ()->
+        else
+            appManager.removeFromDatabase manifest, (err) ->
+                return console.log err if err?
+                appManager.resetProxy (err) ->
                     return console.log err if err?
+                    appManager.removePortForwarding manifest.name, manifest.port, (err) ->
+                        return console.log err if err?
 
 program
 .command "vm:init"
@@ -154,8 +166,6 @@ program
         (cb) ->
             log.info "Starting the virtual machine...this may take a while."
             vagrantManager.vagrantUp (code) -> cb null, code
-        (cb) ->
-            setTimeout cb, 30000
         (cb) -> vagrantManager.virtualMachineStatus (status) -> cb()
     ], (err, results) ->
         [_, code] = results

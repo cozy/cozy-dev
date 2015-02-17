@@ -61,6 +61,24 @@ class exports.ApplicationManager
                 output = 'Uninstall failed.'.red
                 @checkError err, res, body, 200, output, callback
 
+    stopApp: (app, callback) ->
+        cmds = []
+        cmds.push
+            name: 'vagrant'
+            args: ['ssh', '-c', "cozy-monitor stop #{app}"]
+            opts:
+                'cwd': path.join __dirname, '..'
+        helpers.spawnUntilEmpty cmds, callback
+
+    startApp: (app, callback) ->
+        cmds = []
+        cmds.push
+            name: 'vagrant'
+            args: ['ssh', '-c', "cozy-monitor start #{app}"]
+            opts:
+                'cwd': path.join __dirname, '..'
+        helpers.spawnUntilEmpty cmds, callback
+
     checkStatus: (url, password, callback) ->
         checkApp = (app) =>
             (next) =>
@@ -118,7 +136,7 @@ class exports.ApplicationManager
             port = app.port
             name = app.name
             dsClient.del "data/#{app._id}/", (err, res, body) ->
-                callback err, name, port
+                callback err
 
     addPortForwarding: (name, port, callback) ->
         options=
@@ -137,9 +155,9 @@ class exports.ApplicationManager
         child = spawn command, args, options
         pid = child.pid
         child.unref()
-        fs.openSync path.join(__dirname, '..', "#{name}.pid"), 'w'
-        fs.writeFileSync path.join(__dirname, '..', "#{name}.pid"), pid
-        callback()
+        fs.open path.join(__dirname, '..', "#{name}.pid"), 'w', (err) ->
+            return callback err if err?
+            fs.writeFile path.join(__dirname, '..', "#{name}.pid"), pid, callback
 
     removePortForwarding: (name, port, callback) ->
         pid = fs.readFileSync path.join(__dirname, '..', "#{name}.pid"), 'utf8'
