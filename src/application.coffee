@@ -174,5 +174,8 @@ class exports.ApplicationManager
         if fs.existsSync file
             pid = fs.readFileSync file, 'utf8'
             fs.unlink file
-            process.kill(pid)
+            try
+                process.kill(pid)
+            catch
+                log.info 'No process.'
         callback()
