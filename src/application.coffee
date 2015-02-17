@@ -140,6 +140,7 @@ class exports.ApplicationManager
                 callback err
 
     addPortForwarding: (name, port, callback) ->
+        # Start ssh process
         options=
             detached: true
             stdio: ['ignore', 'ignore', 'ignore']
@@ -154,19 +155,25 @@ class exports.ApplicationManager
         args = args.concat ['-o', 'PasswordAuthentication=no']
         args = args.concat ['-o', 'IdentitiesOnly=yes']
         child = spawn command, args, options
+        # Retrieve pid
         pid = child.pid
         child.unref()
+        # Store pid in pid file
         file = helpers.getPidFile(name)
         fs.open file, 'w', (err) ->
             return callback err if err?
             fs.writeFile file, pid, callback
 
     removePortForwarding: (name, port, callback) ->
+        # Retrieve pid file
         file = helpers.getPidFile(name)
         if fs.existsSync file
+            # Retrieve pid
             pid = fs.readFileSync file, 'utf8'
+            # Remove pid file
             fs.unlink file
             try
+                # Kill ssh process
                 process.kill(pid)
             catch
                 log.info 'No process.'
