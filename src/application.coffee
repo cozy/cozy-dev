@@ -156,21 +156,13 @@ class exports.ApplicationManager
         child = spawn command, args, options
         pid = child.pid
         child.unref()
-        if helpers.isRunningOnWindows()
-            home = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE
-            file = path.join(home, "#{name}.pid")
-        else
-            file = path.join('/tmp', "#{name}.pid")
+        file = helpers.getPidFile(name)
         fs.open file, 'w', (err) ->
             return callback err if err?
             fs.writeFile file, pid, callback
 
     removePortForwarding: (name, port, callback) ->
-        if helpers.isRunningOnWindows()
-            home = process.env.HOME || process.env.HOMEPATH || process.env.USERPROFILE
-            file = path.join(home, "#{name}.pid")
-        else
-            file = path.join('/tmp', "#{name}.pid")
+        file = helpers.getPidFile(name)
         if fs.existsSync file
             pid = fs.readFileSync file, 'utf8'
             fs.unlink file
