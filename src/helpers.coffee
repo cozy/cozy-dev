@@ -1,5 +1,6 @@
 {spawn} = require 'child_process'
 os = require 'os'
+path = require 'path'
 inquirer = require 'inquirer'
 Client = require('request-json').JsonClient
 
@@ -59,3 +60,10 @@ module.exports.promptPassword = (name) -> (cb) ->
         message: name
     inquirer.prompt options, (answers) ->
         cb null, answers.password
+
+module.exports.getPidFile = (name) ->
+    if module.exports.isRunningOnWindows()
+        home = process.env.HOME or process.env.HOMEPATH or process.env.USERPROFILE
+        return path.join(home, "#{name}.pid")
+    else
+        return path.join('/tmp', "#{name}.pid")

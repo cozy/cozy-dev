@@ -7,6 +7,8 @@ path = require 'path'
 
 fs = require 'fs'
 helpers = require './helpers'
+VagrantManager = require('./vagrant').VagrantManager
+vagrantManager = new VagrantManager()
 
 Client = require("request-json").JsonClient
 Client::configure = (url, password, callback) ->
@@ -132,6 +134,7 @@ class exports.ApplicationManager
     removeFromDatabase: (manifest, callback) ->
         dsClient = new Client 'http://localhost:9101'
         dsClient.post 'request/application/byslug/', {key: manifest.slug}, (err, res, body) ->
+            return callback err if err? or not body?[0]?.value
             app = body[0].value
             port = app.port
             name = app.name
@@ -139,27 +142,43 @@ class exports.ApplicationManager
                 callback err
 
     addPortForwarding: (name, port, callback) ->
-        options=
-            detached: true
-            stdio: ['ignore', 'ignore', 'ignore']
-        filePath = path.join(__dirname, '..', '.vagrant', 'machines', 'default', 'virtualbox', 'private_key')
-        command = 'ssh'
-        args = ['-N', 'vagrant@127.0.0.1']
-        args = args.concat ['-R', "#{port}:localhost:#{port}"]
-        args = args.concat ['-p', '2222']
-        args = args.concat ['-o', "IdentityFile=#{filePath}"]
-        args = args.concat ['-o','UserKnownHostsFile=/dev/null']
-        args = args.concat ['-o', 'StrictHostKeyChecking=no']
-        args = args.concat ['-o', 'PasswordAuthentication=no']
-        args = args.concat ['-o', 'IdentitiesOnly=yes']
-        child = spawn command, args, options
-        pid = child.pid
-        child.unref()
-        fs.open path.join(__dirname, '..', "#{name}.pid"), 'w', (err) ->
+        vagrantManager.getSshConfig (err, config) ->
             return callback err if err?
-            fs.writeFile path.join(__dirname, '..', "#{name}.pid"), pid, callback
+            # Start ssh process
+            options=
+                detached: true
+                stdio: ['ignore', 'ignore', 'ignore']
+            command = 'ssh'
+            args = ['-N', 'vagrant@127.0.0.1']
+            args = args.concat ['-R', "#{port}:localhost:#{port}"]
+            args = args.concat ['-p', config.Port]
+            args = args.concat ['-o', "IdentityFile=#{config.IdentityFile}"]
+            args = args.concat ['-o',"UserKnownHostsFile=#{config.UserKnownHostsFile}"]
+            args = args.concat ['-o', "StrictHostKeyChecking=#{config.StrictHostKeyChecking}"]
+            args = args.concat ['-o', "PasswordAuthentication=#{config.PasswordAuthentication}"]
+            args = args.concat ['-o', "IdentitiesOnly=#{config.IdentitiesOnly}"]
+
+            child = spawn command, args, options
+            # Retrieve pid
+            pid = child.pid
+            child.unref()
+            # Store pid in pid file
+            file = helpers.getPidFile(name)
+            fs.open file, 'w', (err) ->
+                return callback err if err?
+                fs.writeFile file, pid, callback
 
     removePortForwarding: (name, port, callback) ->
-        pid = fs.readFileSync path.join(__dirname, '..', "#{name}.pid"), 'utf8'
-        process.kill(pid)
+        # Retrieve pid file
+        file = helpers.getPidFile(name)
+        if fs.existsSync file
+            # Retrieve pid
+            pid = fs.readFileSync file, 'utf8'
+            # Remove pid file
+            fs.unlink file
+            try
+                # Kill ssh process
+                process.kill(pid)
+            catch
+                log.info 'No process.'
         callback()
