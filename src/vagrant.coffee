@@ -5,6 +5,7 @@ log = require('printit')
     prefix: 'vagrant    '
 Client = require('request-json').JsonClient
 exec = require('child_process').exec
+spawn = require('child_process').spawn
 compareVersions = require "mozilla-version-comparator"
 
 helpers = require './helpers'
@@ -163,3 +164,25 @@ class exports.VagrantManager
 
                     log.info "\t* #{app}#{info}: #{formattedStatus}"
                 callback isOkay
+
+    getSshConfig: (callback) ->
+        config = ''
+        sshConf = {}
+        cmd =
+            name: 'vagrant'
+            args: ['ssh-config']
+        sshConfig = spawn cmd.name, cmd.args, cwd: __dirname
+        sshConfig.stdout.on 'data', (data) ->
+            config += data.toString()
+
+        sshConfig.on 'close', (err) ->
+            if config is ''
+                callback 'No config'
+            else
+                configs = config.split('\n')
+                for conf in configs
+                    conf = conf.replace('  ', '')
+                    params = conf.split(' ')
+                    if params[0]? and params[1]?
+                        sshConf[params[0]] = params[1]
+                callback null, sshConf
