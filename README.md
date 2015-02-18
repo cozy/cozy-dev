@@ -37,7 +37,7 @@ More information about CozyCloud and virtual machines in [the documentation](htt
 
 Get sources:
 
-    git clone https://github.com/mycozycloud/cozy-dev.git
+    git clone https://github.com/cozy/cozy-dev.git
 
 Run:
 
@@ -56,7 +56,7 @@ Cozy Manager is developed by Cozy Cloud and distributed under the LGPL v3 licens
 
 ## What is Cozy?
 
-![Cozy Logo](https://raw.github.com/mycozycloud/cozy-setup/gh-pages/assets/images/happycloud.png)
+![Cozy Logo](https://raw.github.com/cozy/cozy-setup/gh-pages/assets/images/happycloud.png)
 
 [Cozy](http://cozy.io) is a platform that brings all your web services in the
 same private space.  With it, your web apps and your devices can share data
@@ -68,6 +68,6 @@ hardware where no one profiles you.
 You can reach the Cozy Community by:
 
 * Chatting with us on IRC #cozycloud on irc.freenode.net
-* Posting on our [Forum](https://groups.google.com/forum/?fromgroups#!forum/cozy-cloud)
-* Posting issues on the [Github repos](https://github.com/mycozycloud/)
+* Posting on our [Forum](https://forum.cozy.io)
+* Posting issues on the [Github repos](https://github.com/cozy/)
 * Mentioning us on [Twitter](http://twitter.com/mycozycloud)
