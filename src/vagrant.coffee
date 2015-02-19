@@ -171,12 +171,18 @@ class exports.VagrantManager
         cmd =
             name: 'vagrant'
             args: ['ssh-config']
-        sshConfig = spawn cmd.name, cmd.args, cwd: __dirname
+        sshConfig = spawn cmd.name, cmd.args, cwd: process.cwd()
         sshConfig.stdout.on 'data', (data) ->
             config += data.toString()
 
+        maybeErr = ''
+        sshConfig.stderr.on 'data', (data) ->
+            maybeErr += data
+
         sshConfig.on 'close', (err) ->
-            if config is ''
+            if maybeErr isnt ''
+                callback maybeErr
+            else if config is ''
                 callback 'No config'
             else
                 configs = config.split('\n')
