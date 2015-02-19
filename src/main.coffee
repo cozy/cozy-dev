@@ -102,7 +102,7 @@ program
 program
 .command "deploy [port]"
 .description "Push code and deploy app located in current directory " + \
-             "to you virtualbox."
+             "to your virtualbox."
 .action (port) ->
     port = 9250 unless port?
     # Recover manifest
@@ -355,9 +355,12 @@ program
 
 program
 .command "*"
-.description "Display error message for an unknown command."
+.description "Display help message for an unknown command."
 .action ->
-    log.error 'Unknown command, run "cozy-dev --help" to know the list of ' + \
-              'available commands.'
+    log.error 'Unknown command, showing help instead.'
+    program.help()
 
 program.parse process.argv
+
+unless process.argv.length > 2
+    program.help()
