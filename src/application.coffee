@@ -68,8 +68,6 @@ class exports.ApplicationManager
         cmds.push
             name: 'vagrant'
             args: ['ssh', '-c', "cozy-monitor stop #{app}"]
-            opts:
-                'cwd': path.join __dirname, '..'
         helpers.spawnUntilEmpty cmds, callback
 
     startApp: (app, callback) ->
@@ -77,8 +75,6 @@ class exports.ApplicationManager
         cmds.push
             name: 'vagrant'
             args: ['ssh', '-c', "cozy-monitor start #{app}"]
-            opts:
-                'cwd': path.join __dirname, '..'
         helpers.spawnUntilEmpty cmds, callback
 
     checkStatus: (url, password, callback) ->
