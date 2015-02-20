@@ -23,15 +23,8 @@ module.exports.spawnUntilEmpty = (commands, callback) ->
         commandDescriptor.args.unshift name
         commandDescriptor.args.unshift '/C'
 
-    command.stdout.on 'data',  (data) ->
-        log = require('printit')
-            prefix: '(spawn)    '
-        log.info "#{data}".replace(/\n/g, '')
-
-    command.stderr.on 'data', (data) ->
-        log = require('printit')
-            prefix: '(spawn)   '
-        log.error "#{data}".replace(/\n/g, '')
+    command.stdout.pipe process.stdout
+    command.stderr.pipe process.stderr
 
     command.on 'close', (code, signal) ->
         if commands.length > 0 and code is 0
