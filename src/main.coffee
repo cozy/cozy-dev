@@ -291,6 +291,7 @@ program
                 (cb) ->
                     log.info "Start the new virtual machine..."
                     vagrantManager.vagrantUp (code) -> cb null, code
+                (cb) -> databaseManager.getCurrentDatabase cb
             ], (err, results) ->
                 if err
                     log.info err
