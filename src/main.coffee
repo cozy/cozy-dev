@@ -117,24 +117,25 @@ program
 
         if app.name in ['home', 'data-system', 'proxy']
             # Stack application
-            async.series [
+            steps = [
                 (cb) -> appManager.stopApp app.name, cb
                 (cb) -> appManager.addPortForwarding app.name, app.port, cb
-            ], (err) ->
-                return console.log err if err?
-                msg = "Application deployed in virtual machine."
-                log.info msg.green
-
+            ]
         else
             # User application
-            async.series [
+            steps = [
                 (cb) -> appManager.addInDatabase app, cb
                 (cb) -> appManager.resetProxy cb
                 (cb) -> appManager.addPortForwarding app.name, app.port, cb
-            ], (err) ->
-                return console.log err if err?
-                msg = "Application deployed in virtual machine."
-                log.info msg.green
+            ]
+
+        async.series steps, (err) ->
+            return log.error err if err?
+            msg = "Application deployed in virtual machine."
+            log.info msg.green
+
+            appUrl = "http://localhost:9104/#apps/#{app.slug}"
+            log.info "You can see your app on #{appUrl}"
 
 # Uninstall application for cozy stack
 program
@@ -153,23 +154,22 @@ program
 
         if app.name in ['home', 'data-system', 'proxy']
             # Stack application
-            async.series [
+            steps = [
                 (cb) -> appManager.removePortForwarding app.name, app.port, cb
                 (cb) -> appManager.startApp app.name, cb
-            ], (err) ->
-                return console.log err if err?
-                msg = "Application undeployed in virtual machine."
-                log.info msg.green
+            ]
         else
             # User application
-            async.series [
+            steps = [
                 (cb) -> appManager.removeFromDatabase app, cb
                 (cb) -> appManager.resetProxy cb
                 (cb) -> appManager.removePortForwarding app.name, app.port, cb
-            ], (err) ->
-                return console.log err if err?
-                msg = "Application undeployed in virtual machine."
-                log.info msg.green
+            ]
+
+        async.series steps, (err) ->
+            return log.error err if err?
+            msg = "Application undeployed in virtual machine."
+            log.info msg.green
 
 program
 .command "vm:init"
