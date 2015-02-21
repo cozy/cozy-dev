@@ -366,6 +366,15 @@ program
                 process.exit 0
 
 program
+.command "db:name"
+.description "Returns the current used database"
+.action ->
+    databaseManager.getCurrentDatabase (err) ->
+        returnCode = if err? then 1 else 0
+        process.exit returnCode
+
+
+program
 .command "*"
 .description "Display help message for an unknown command."
 .action ->

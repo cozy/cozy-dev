@@ -7,6 +7,9 @@ log = require('printit')
 
 Client = require('request-json').JsonClient
 
+CONTROLLER_CONFIG = 'controller.json'
+CONTROLLER_CONFIG_PATH = "/etc/cozy/#{CONTROLLER_CONFIG}"
+
 module.exports = class DatabaseManager
 
 
@@ -107,3 +110,23 @@ module.exports = class DatabaseManager
             else
                 log.info "Database #{dbName} successfully reset.".green
             callback()
+
+    getCurrentDatabase: (callback) ->
+
+        command = """
+        vagrant ssh -c "sudo cat #{CONTROLLER_CONFIG_PATH}"
+        """
+        exec command, (err, stderr, stdout) ->
+            try
+                config = JSON.stringify stdout
+                databaseName = config?['data-system']?['DB_NAME']
+
+                # default is cozy
+                databaseName ?= 'cozy'
+                log.info "Current database is \"#{databaseName}\""
+                callback()
+
+            catch err
+                msg = "An error occured while getting database name"
+                log.error "#{msg} -- #{err}".red
+                callback err
