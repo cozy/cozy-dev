@@ -100,14 +100,20 @@ program
 
 # Install application for cozy stack
 program
-.command "deploy [port]"
+.command "deploy [port] [slug]"
 .description "Push code and deploy app located in current directory " + \
              "to your virtualbox."
-.action (port) ->
+.action (port, slug) ->
     port = 9250 unless port?
     # Recover manifest
     projectManager.recoverManifest port, (err, app) ->
-        return console.log err if err?
+        return log.error err if err?
+
+        # Slug can be overriden by command's parameter
+        if slug?
+            app.name = slug
+            app.slug = slug
+            app.displayName += " (#{slug})"
 
         if app.name in ['home', 'data-system', 'proxy']
             # Stack application
@@ -132,12 +138,18 @@ program
 
 # Uninstall application for cozy stack
 program
-.command "undeploy"
+.command "undeploy [slug]"
 .description "Undeploy application"
-.action () ->
+.action (slug) ->
     # Recover manifest
     projectManager.recoverManifest 9250, (err, app) ->
-        return console.log err if err?
+        return log.error err if err?
+
+        # Slug can be overriden by command's parameter
+        if slug?
+            app.name = slug
+            app.slug = slug
+            app.displayName += " (#{slug})"
 
         if app.name in ['home', 'data-system', 'proxy']
             # Stack application
