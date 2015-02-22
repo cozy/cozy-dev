@@ -74,4 +74,16 @@ class exports.ProjectManager
             manifest.password = 'test'
             manifest.docType = "Application"
             manifest.port = port
+            basePath = path.join process.cwd(), "client", "app", "assets", "icons"
+            svgPath = path.join basePath, "main_icon.svg"
+            pngPath = path.join basePath, "main_icon.png"
+            if manifest['icon-path'] and fs.existsSync manifest['icon-path']
+                manfest.iconPath = manifest['icon-path']
+                manifest.iconType = 'png'
+            else if fs.existsSync(svgPath)
+                manifest.iconType = 'svg'
+                manifest.iconPath = svgPath
+            else if fs.existsSync(pngPath)
+                manifest.iconType = 'png'
+                manifest.iconPath = pngPath
             cb null, manifest

@@ -120,7 +120,12 @@ class exports.ApplicationManager
     addInDatabase: (manifest, callback) ->
         dsClient = new Client 'http://localhost:9101'
         dsClient.post 'data/', manifest, (err, res, body) ->
-            callback err
+            return callback err if err?
+            if manifest.iconPath?
+                dsClient.sendFile "data/#{body._id}/attachments/", manifest.iconPath, 'name': "icon.#{manifest.iconType}", (err, res, body) ->
+                    callback err
+            else
+                callback()
 
     resetProxy: (callback) ->
         proxyClient = new Client 'http://localhost:9104'
