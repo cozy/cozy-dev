@@ -185,6 +185,7 @@ program
             log.info "Starting the virtual machine...this may take a while."
             vagrantManager.vagrantUp (code) -> cb null, code
         (cb) -> vagrantManager.virtualMachineStatus (status) -> cb()
+        (cb) -> appManager.checkVersions appData, cb
     ], (err, results) ->
         [_, code] = results
 

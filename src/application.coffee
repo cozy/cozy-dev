@@ -4,6 +4,7 @@ log = require('printit')
     prefix: 'application'
 spawn = require('child_process').spawn
 path = require 'path'
+exec = require('child_process').exec
 
 fs = require 'fs'
 helpers = require './helpers'
@@ -117,6 +118,27 @@ class exports.ApplicationManager
                 else
                     callback null, true
 
+    stackVersions: (callback) ->
+        dsClient = new Client 'http://localhost:9101'
+        dsClient.post 'request/stackapplication/all/', {}, (err, res, body) ->
+            async.eachSeries body, (app, cb) ->
+                app = app.value
+                if app.lastVersion
+                    if app.version < app.lastVersion
+                        log.warn "#{app.name} : #{app.version} -> #{app.lastVersion}"
+                        cb true
+                    else
+                        cb()
+                else
+                    request.get "https://raw.github.com/cozy/cozy-#{app.name}/master/package.json", (err, res, data) ->
+                        data = JSON.parse data
+                        if app.version < data.version
+                            log.warn "#{app.name} : #{app.version} -> #{data.version}"
+                            cb true
+                        else
+                            cb()
+            , callback
+
     addInDatabase: (manifest, callback) ->
         dsClient = new Client 'http://localhost:9101'
         dsClient.post 'data/', manifest, (err, res, body) ->
@@ -183,3 +205,21 @@ class exports.ApplicationManager
             catch
                 log.info 'No process.'
         callback()
+
+    checkVersions: (appData, callback) =>
+        oldVersions = []
+        log.info 'Check cozy-dev version :'
+        child = exec 'npm show cozy-dev version', (err, stdout, stderr) =>
+            version = stdout.replace(/\n/g, '')
+            if version > appData.version
+                log.warn "A new version is available for cozy-dev, you can enter 'npm -g update cozy-dev' to update it."
+                oldVersions.push "cozy-dev"
+            else
+                log.info "Cozy-dev is up to date."
+            log.info 'Check cozy versions : '
+            @stackVersions (need) ->
+                if need
+                    oldVersions.push "cozy-stack"
+                    log.warn "A new version is available for cozy stack, you can enter cozy-dev vm:update to update it."
+                else
+                    log.info "Cozy-dev is up to date."
