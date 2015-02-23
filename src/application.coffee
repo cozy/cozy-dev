@@ -125,15 +125,19 @@ class exports.ApplicationManager
                 app = app.value
                 if app.lastVersion
                     if app.version < app.lastVersion
-                        log.warn "#{app.name} : #{app.version} -> #{app.lastVersion}"
+                        log.warn "#{app.name}: "
+                        log.warn "#{app.version} -> #{app.lastVersion}"
                         cb true
                     else
                         cb()
                 else
-                    request.get "https://raw.github.com/cozy/cozy-#{app.name}/master/package.json", (err, res, data) ->
+                    path = "https://raw.github.com/cozy/cozy-#{app.name}" +
+                        "/master/package.json"
+                    request.get path, (err, res, data) ->
                         data = JSON.parse data
                         if app.version < data.version
-                            log.warn "#{app.name} : #{app.version} -> #{data.version}"
+                            log.warn "#{app.name}: "
+                            log.warn "#{app.version} -> #{data.version}"
                             cb true
                         else
                             cb()
@@ -144,7 +148,10 @@ class exports.ApplicationManager
         dsClient.post 'data/', manifest, (err, res, body) ->
             return callback err if err?
             if manifest.iconPath?
-                dsClient.sendFile "data/#{body._id}/attachments/", manifest.iconPath, 'name': "icon.#{manifest.iconType}", (err, res, body) ->
+                path = "data/#{body._id}/attachments/"
+                data = 'name': "icon.#{manifest.iconType}"
+                filePath = manifest.iconPath
+                dsClient.sendFile path, filePath, data, (err, res, body) ->
                     callback err
             else
                 callback()
@@ -210,9 +217,10 @@ class exports.ApplicationManager
         oldVersions = []
         log.info 'Check cozy-dev version :'
         child = exec 'npm show cozy-dev version', (err, stdout, stderr) =>
-            version = stdout.replace(/\n/g, '')
+            version = stdout.replace /\n/g, ''
             if version > appData.version
-                log.warn "A new version is available for cozy-dev, you can enter 'npm -g update cozy-dev' to update it."
+                log.warn 'A new version is available for cozy-dev, ' +
+                    "you can enter 'npm -g update cozy-dev' to update it."
                 oldVersions.push "cozy-dev"
             else
                 log.info "Cozy-dev is up to date."
@@ -220,6 +228,7 @@ class exports.ApplicationManager
             @stackVersions (need) ->
                 if need
                     oldVersions.push "cozy-stack"
-                    log.warn "A new version is available for cozy stack, you can enter cozy-dev vm:update to update it."
+                    log.warn "A new version is available for cozy stack, " +
+                        "you can enter cozy-dev vm:update to update it."
                 else
                     log.info "Cozy-dev is up to date."
