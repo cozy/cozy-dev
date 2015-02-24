@@ -6,5 +6,11 @@
     "max_line_length" : {
         "value" : 80,
         "level" : "error"
+    },
+    "no_empty_param_list": {
+        "level": "warn"
+    },
+    "prefer_english_operator": {
+        "level": "warn"
     }
 }

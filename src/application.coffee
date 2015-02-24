@@ -105,7 +105,7 @@ class exports.ApplicationManager
                         log.error err.red
                     else
                         funcs = []
-                        if apps? and typeof apps == "object"
+                        if apps? and typeof apps is "object"
                             funcs.push checkApp(app.name) for app in apps.rows
                             async.series funcs, callback
 
@@ -133,7 +133,8 @@ class exports.ApplicationManager
 
     removeFromDatabase: (manifest, callback) ->
         dsClient = new Client 'http://localhost:9101'
-        dsClient.post 'request/application/byslug/', {key: manifest.slug}, (err, res, body) ->
+        option = key: manifest.slug
+        dsClient.post 'request/application/byslug/', option, (err, res, body) ->
             return callback err if err? or not body?[0]?.value
             app = body[0].value
             port = app.port
@@ -149,14 +150,23 @@ class exports.ApplicationManager
                 detached: true
                 stdio: ['ignore', 'ignore', 'ignore']
             command = 'ssh'
-            args = ['-N', 'vagrant@127.0.0.1']
-            args = args.concat ['-R', "#{port}:localhost:#{port}"]
-            args = args.concat ['-p', config.Port]
-            args = args.concat ['-o', "IdentityFile=#{config.IdentityFile}"]
-            args = args.concat ['-o',"UserKnownHostsFile=#{config.UserKnownHostsFile}"]
-            args = args.concat ['-o', "StrictHostKeyChecking=#{config.StrictHostKeyChecking}"]
-            args = args.concat ['-o', "PasswordAuthentication=#{config.PasswordAuthentication}"]
-            args = args.concat ['-o', "IdentitiesOnly=#{config.IdentitiesOnly}"]
+            args = []
+            args.push '-N'
+            args.push 'vagrant@127.0.0.1'
+            args.push '-R'
+            args.push "#{port}:localhost:#{port}"
+            args.push '-p'
+            args.push config.Port
+            args.push '-o'
+            args.push "IdentityFile=#{config.IdentityFile}"
+            args.push '-o'
+            args.push "UserKnownHostsFile=#{config.UserKnownHostsFile}"
+            args.push '-o'
+            args.push "StrictHostKeyChecking=#{config.StrictHostKeyChecking}"
+            args.push '-o'
+            args.push "PasswordAuthentication=#{config.PasswordAuthentication}"
+            args.push '-o'
+            args.push "IdentitiesOnly=#{config.IdentitiesOnly}"
 
             child = spawn command, args, options
             # Retrieve pid

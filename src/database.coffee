@@ -7,48 +7,53 @@ log = require('printit')
 
 Client = require('request-json').JsonClient
 
+CONTROLLER_CONFIG = 'controller.json'
+CONTROLLER_CONFIG_PATH = "/etc/cozy/#{CONTROLLER_CONFIG}"
+
 module.exports = class DatabaseManager
 
 
     switch: (newName, callback) ->
 
-        fileName = 'controller.json'
-        filePath = "/etc/cozy/#{fileName}"
-
-        async.series
-
-            getConfig: (next) ->
+        async.waterfall [
+            # get config
+            (next) ->
                 command = """
-                vagrant ssh -c "sudo cp #{filePath} /vagrant/"
+                vagrant ssh -c "sudo cat #{CONTROLLER_CONFIG_PATH} 1>&2"
                 """
                 log.info 'Getting current configuration...'
                 exec command, (err, stderr, stdout) ->
-                    if err? or stderr
-                        err = err or stderr
+                    if err?
                         next err
                     else
-                        next()
+                        next null, stdout
 
-            updateConfig: (next) ->
+            # update config
+            (rawConfig, next) ->
                 try
-                    options = encoding: 'utf-8'
-                    rawConfig = fs.readFileSync './controller.json', options
+                    # Extract JSON from controller configuration
                     config = JSON.parse rawConfig
                     config.env ?= {}
 
                     unless config.env['data-system']
                         config.env['data-system'] = {}
 
+                    # Override DB_NAME configuration
                     config.env['data-system']['DB_NAME'] = newName
-                    newRawConfig = JSON.stringify config
-                    fs.writeFileSync './controller.json', newRawConfig
-                    next()
+                    newRawConfig = JSON.stringify config, null, ' '
+                    next null, newRawConfig
                 catch err
                     next err
 
-            writeConfig: (next) ->
+            # write config
+            (rawConfig, next) ->
+                # escape JSON for the bash command
+                rawConfig = rawConfig.replace /"/g, "\""
+                subCommand = """
+                echo \\"#{rawConfig}\\" >> sudo #{CONTROLLER_CONFIG_PATH}
+                """
                 command = """
-                vagrant ssh -c "sudo mv /vagrant/#{fileName} #{filePath}"
+                vagrant ssh -c "#{subCommand}"
                 """
                 log.info 'Updating new configuration...'
                 exec command, (err, stderr, stdout) ->
@@ -58,7 +63,8 @@ module.exports = class DatabaseManager
                     else
                         next()
 
-            restartController: (next) ->
+            # restart controller
+            (next) ->
                 command = """
                 vagrant ssh -c "sudo supervisorctl restart cozy-controller"
                 """
@@ -67,12 +73,13 @@ module.exports = class DatabaseManager
                     # supervisor outputs its logs to stderr...
                     next err
 
-        , (err) ->
+        ], (err) ->
             if err?
                 msg = "An error occured while changing Cozy's configuration"
                 log.error "#{msg} -- #{err}".red
             else
                 log.info "Database successfully switched to #{newName}".green
+
             callback()
 
 
@@ -103,3 +110,23 @@ module.exports = class DatabaseManager
             else
                 log.info "Database #{dbName} successfully reset.".green
             callback()
+
+    getCurrentDatabase: (callback) ->
+
+        command = """
+        vagrant ssh -c "sudo cat #{CONTROLLER_CONFIG_PATH}"
+        """
+        exec command, (err, stderr, stdout) ->
+            try
+                config = JSON.stringify stdout
+                databaseName = config?['data-system']?['DB_NAME']
+
+                # default is cozy
+                databaseName ?= 'cozy'
+                log.info "Current database is \"#{databaseName}\""
+                callback()
+
+            catch err
+                msg = "An error occured while getting database name"
+                log.error "#{msg} -- #{err}".red
+                callback err

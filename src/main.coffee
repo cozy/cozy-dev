@@ -100,64 +100,76 @@ program
 
 # Install application for cozy stack
 program
-.command "deploy [port]"
+.command "deploy [port] [slug]"
 .description "Push code and deploy app located in current directory " + \
              "to your virtualbox."
-.action (port) ->
+.action (port, slug) ->
     port = 9250 unless port?
     # Recover manifest
     projectManager.recoverManifest port, (err, app) ->
-        return console.log err if err?
+        return log.error err if err?
+
+        # Slug can be overriden by command's parameter
+        if slug?
+            app.name = slug
+            app.slug = slug
+            app.displayName += " (#{slug})"
 
         if app.name in ['home', 'data-system', 'proxy']
             # Stack application
-            async.series [
+            steps = [
                 (cb) -> appManager.stopApp app.name, cb
                 (cb) -> appManager.addPortForwarding app.name, app.port, cb
-            ], (err) ->
-                return console.log err if err?
-                msg = "Application deployed in virtual machine."
-                log.info msg.green
-
+            ]
         else
             # User application
-            async.series [
+            steps = [
                 (cb) -> appManager.addInDatabase app, cb
                 (cb) -> appManager.resetProxy cb
                 (cb) -> appManager.addPortForwarding app.name, app.port, cb
-            ], (err) ->
-                return console.log err if err?
-                msg = "Application deployed in virtual machine."
-                log.info msg.green
+            ]
+
+        async.series steps, (err) ->
+            return log.error err if err?
+            msg = "Application deployed in virtual machine."
+            log.info msg.green
+
+            appUrl = "http://localhost:9104/#apps/#{app.slug}"
+            log.info "You can see your app on #{appUrl}"
 
 # Uninstall application for cozy stack
 program
-.command "undeploy"
+.command "undeploy [slug]"
 .description "Undeploy application"
-.action () ->
+.action (slug) ->
     # Recover manifest
     projectManager.recoverManifest 9250, (err, app) ->
-        return console.log err if err?
+        return log.error err if err?
+
+        # Slug can be overriden by command's parameter
+        if slug?
+            app.name = slug
+            app.slug = slug
+            app.displayName += " (#{slug})"
 
         if app.name in ['home', 'data-system', 'proxy']
             # Stack application
-            async.series [
+            steps = [
                 (cb) -> appManager.removePortForwarding app.name, app.port, cb
                 (cb) -> appManager.startApp app.name, cb
-            ], (err) ->
-                return console.log err if err?
-                msg = "Application undeployed in virtual machine."
-                log.info msg.green
+            ]
         else
             # User application
-            async.series [
+            steps = [
                 (cb) -> appManager.removeFromDatabase app, cb
                 (cb) -> appManager.resetProxy cb
                 (cb) -> appManager.removePortForwarding app.name, app.port, cb
-            ], (err) ->
-                return console.log err if err?
-                msg = "Application undeployed in virtual machine."
-                log.info msg.green
+            ]
+
+        async.series steps, (err) ->
+            return log.error err if err?
+            msg = "Application undeployed in virtual machine."
+            log.info msg.green
 
 program
 .command "vm:init"
@@ -279,6 +291,7 @@ program
                 (cb) ->
                     log.info "Start the new virtual machine..."
                     vagrantManager.vagrantUp (code) -> cb null, code
+                (cb) -> databaseManager.getCurrentDatabase cb
             ], (err, results) ->
                 if err
                     log.info err
@@ -352,6 +365,15 @@ program
                 processReset()
             else
                 process.exit 0
+
+program
+.command "db:name"
+.description "Returns the current used database"
+.action ->
+    databaseManager.getCurrentDatabase (err) ->
+        returnCode = if err? then 1 else 0
+        process.exit returnCode
+
 
 program
 .command "*"
