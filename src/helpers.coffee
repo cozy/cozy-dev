@@ -38,7 +38,7 @@ isStarted = module.exports.isStarted = (callback) ->
     client = new Client url
     client.get '/status', (err, res, body) ->
         if err
-            setTimeout () ->
+            setTimeout ->
                 isStarted callback
             , 1 * 1000
         else
@@ -56,7 +56,10 @@ module.exports.promptPassword = (name) -> (cb) ->
 
 module.exports.getPidFile = (name) ->
     if module.exports.isRunningOnWindows()
-        home = process.env.HOME or process.env.HOMEPATH or process.env.USERPROFILE
-        return path.join(home, "#{name}.pid")
+        home =
+            process.env.HOME or
+            process.env.HOMEPATH or
+            process.env.USERPROFILE
+        return path.join home, "#{name}.pid"
     else
-        return path.join('/tmp', "#{name}.pid")
+        return path.join '/tmp', "#{name}.pid"

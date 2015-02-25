@@ -84,7 +84,7 @@ class exports.VagrantManager
             args: ['up']
         helpers.spawnUntilEmpty cmds, (code) ->
             log.info "Checking status ..."
-            helpers.isStarted () ->
+            helpers.isStarted ->
                 callback code
 
     vagrantHalt: (callback)  ->
@@ -121,7 +121,7 @@ class exports.VagrantManager
             name: 'vagrant'
             args: ['ssh', '-c', '~/update-devenv.sh']
 
-        @importVagrantFile () ->
+        @importVagrantFile ->
             helpers.spawnUntilEmpty cmds, callback
 
     importVagrantFile: (callback) ->
