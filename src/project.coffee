@@ -74,4 +74,25 @@ class exports.ProjectManager
             manifest.password = 'test'
             manifest.docType = "Application"
             manifest.port = port
+
+            # Recover icon
+            basePath = path.join process.cwd(), "client", "app", "assets", "icons"
+            svgPath = path.join basePath, "main_icon.svg"
+            pngPath = path.join basePath, "main_icon.png"
+
+            if manifest['icon-path'] and fs.existsSync manifest['icon-path']
+                # Icon defined in package.json
+                manfest.iconPath = manifest['icon-path']
+                manifest.iconType = 'png'
+
+            else if fs.existsSync(svgPath)
+                # Icon stores in default path (svg icon)
+                manifest.iconType = 'svg'
+                manifest.iconPath = svgPath
+
+            else if fs.existsSync(pngPath)
+                # Icon stores in default path (png icon)
+                manifest.iconType = 'png'
+                manifest.iconPath = pngPath
+
             cb null, manifest

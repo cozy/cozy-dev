@@ -4,6 +4,8 @@ log = require('printit')
     prefix: 'application'
 spawn = require('child_process').spawn
 path = require 'path'
+exec = require('child_process').exec
+request = require 'request'
 
 fs = require 'fs'
 helpers = require './helpers'
@@ -68,8 +70,6 @@ class exports.ApplicationManager
         cmds.push
             name: 'vagrant'
             args: ['ssh', '-c', "cozy-monitor stop #{app}"]
-            opts:
-                'cwd': path.join __dirname, '..'
         helpers.spawnUntilEmpty cmds, callback
 
     startApp: (app, callback) ->
@@ -77,8 +77,6 @@ class exports.ApplicationManager
         cmds.push
             name: 'vagrant'
             args: ['ssh', '-c', "cozy-monitor start #{app}"]
-            opts:
-                'cwd': path.join __dirname, '..'
         helpers.spawnUntilEmpty cmds, callback
 
     checkStatus: (url, password, callback) ->
@@ -124,7 +122,15 @@ class exports.ApplicationManager
     addInDatabase: (manifest, callback) ->
         dsClient = new Client 'http://localhost:9101'
         dsClient.post 'data/', manifest, (err, res, body) ->
-            callback err
+            return callback err if err?
+            if manifest.iconPath?
+                path = "data/#{body._id}/attachments/"
+                data = name: "icon.#{manifest.iconType}"
+                filePath = manifest.iconPath
+                dsClient.sendFile path, filePath, data, (err, res, body) ->
+                    callback err
+            else
+                callback()
 
     resetProxy: (callback) ->
         proxyClient = new Client 'http://localhost:9104'
@@ -142,6 +148,7 @@ class exports.ApplicationManager
             dsClient.del "data/#{app._id}/", (err, res, body) ->
                 callback err
 
+    # Add port forward from host to virtual box for application <name>
     addPortForwarding: (name, port, callback) ->
         vagrantManager.getSshConfig (err, config) ->
             return callback err if err?
@@ -178,6 +185,7 @@ class exports.ApplicationManager
                 return callback err if err?
                 fs.writeFile file, pid, callback
 
+    # Remove port forward from host to virtual box for application <name>
     removePortForwarding: (name, port, callback) ->
         # Retrieve pid file
         file = helpers.getPidFile(name)
@@ -192,3 +200,47 @@ class exports.ApplicationManager
             catch
                 log.info 'No process.'
         callback()
+
+    # Check stack versions
+    stackVersions: (callback) ->
+        # Recover all stack application in database.
+        dsClient = new Client 'http://localhost:9101'
+        dsClient.post 'request/stackapplication/all/', {}, (err, res, body) ->
+            async.eachSeries body, (app, cb) ->
+                app = app.value
+                # Check version with version is stored package.json
+                path = "https://raw.github.com/cozy/cozy-#{app.name}" +
+                    "/master/package.json"
+                request.get path, (err, res, data) ->
+                    data = JSON.parse data
+                    if app.version < data.version
+                        log.warn "#{app.name}: "
+                        log.warn "#{app.version} -> #{data.version}"
+                        cb true
+                    else
+                        cb()
+            , callback
+
+    # Check version :
+    #   * For npm repository 'cozy-dev'
+    #   * For cozy stack
+    # Log to user if a version isn't up-to-date.
+    checkVersions: (appData, callback) =>
+        # Check version for 'cozy-dev'
+        log.info 'Check cozy-dev version :'
+        child = exec 'npm show cozy-dev version', (err, stdout, stderr) =>
+            version = stdout.replace /\n/g, ''
+            if version > appData.version
+                log.warn 'A new version is available for cozy-dev, ' +
+                    "you can enter 'npm -g update cozy-dev' to update it."
+            else
+                log.info "Cozy-dev is up to date.".green
+            # Check version for cozy stack
+            log.info 'Check cozy versions : '
+            @stackVersions (need) ->
+                if need
+                    log.warn "A new version is available for cozy stack, " +
+                        "you can enter cozy-dev vm:update to update it."
+                else
+                    log.info "Cozy-dev is up to date.".green
+                callback()
