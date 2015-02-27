@@ -5,7 +5,7 @@ log = require('printit')
 spawn = require('child_process').spawn
 path = require 'path'
 exec = require('child_process').exec
-request = require 'request'
+Client = require('request-json').JsonClient
 
 fs = require 'fs'
 helpers = require './helpers'
@@ -209,14 +209,16 @@ class exports.ApplicationManager
             async.eachSeries body, (app, cb) ->
                 app = app.value
                 # Check version with version is stored package.json
-                path = "https://raw.github.com/cozy/cozy-#{app.name}" +
-                    "/master/package.json"
-                request.get path, (err, res, data) ->
-                    data = JSON.parse data
-                    if app.version < data.version
-                        log.warn "#{app.name}: "
-                        log.warn "#{app.version} -> #{data.version}"
-                        cb true
+                path = "cozy/cozy-#{app.name}/master/package.json"
+                github = new Client 'https://raw.github.com/'
+                github.get path, (err, res, data) ->
+                    if data?.version?
+                        if app.version < data.version
+                            log.warn "#{app.name}: "
+                            log.warn "#{app.version} -> #{data.version}"
+                            cb true
+                        else
+                            cb()
                     else
                         cb()
             , callback
