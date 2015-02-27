@@ -6,6 +6,7 @@ spawn = require('child_process').spawn
 path = require 'path'
 exec = require('child_process').exec
 Client = require('request-json').JsonClient
+semver = require 'semver'
 
 fs = require 'fs'
 helpers = require './helpers'
@@ -213,7 +214,7 @@ class exports.ApplicationManager
                 github = new Client 'https://raw.github.com/'
                 github.get path, (err, res, data) ->
                     if data?.version?
-                        if app.version < data.version
+                        if semver.gt(data.version, app.version)
                             log.warn "#{app.name}: "
                             log.warn "#{app.version} -> #{data.version}"
                             cb true
@@ -232,7 +233,7 @@ class exports.ApplicationManager
         log.info 'Check cozy-dev version :'
         child = exec 'npm show cozy-dev version', (err, stdout, stderr) =>
             version = stdout.replace /\n/g, ''
-            if version > appData.version
+            if semver.gt(version, appData.version)
                 log.warn 'A new version is available for cozy-dev, ' +
                     "you can enter 'npm -g update cozy-dev' to update it."
             else
