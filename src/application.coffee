@@ -5,7 +5,8 @@ log = require('printit')
 spawn = require('child_process').spawn
 path = require 'path'
 exec = require('child_process').exec
-request = require 'request'
+Client = require('request-json').JsonClient
+semver = require 'semver'
 
 fs = require 'fs'
 helpers = require './helpers'
@@ -209,14 +210,16 @@ class exports.ApplicationManager
             async.eachSeries body, (app, cb) ->
                 app = app.value
                 # Check version with version is stored package.json
-                path = "https://raw.github.com/cozy/cozy-#{app.name}" +
-                    "/master/package.json"
-                request.get path, (err, res, data) ->
-                    data = JSON.parse data
-                    if app.version < data.version
-                        log.warn "#{app.name}: "
-                        log.warn "#{app.version} -> #{data.version}"
-                        cb true
+                path = "cozy/cozy-#{app.name}/master/package.json"
+                github = new Client 'https://raw.github.com/'
+                github.get path, (err, res, data) ->
+                    if data?.version?
+                        if semver.gt(data.version, app.version)
+                            log.warn "#{app.name}: "
+                            log.warn "#{app.version} -> #{data.version}"
+                            cb true
+                        else
+                            cb()
                     else
                         cb()
             , callback
@@ -230,7 +233,7 @@ class exports.ApplicationManager
         log.info 'Check cozy-dev version :'
         child = exec 'npm show cozy-dev version', (err, stdout, stderr) =>
             version = stdout.replace /\n/g, ''
-            if version > appData.version
+            if semver.gt(version, appData.version)
                 log.warn 'A new version is available for cozy-dev, ' +
                     "you can enter 'npm -g update cozy-dev' to update it."
             else
