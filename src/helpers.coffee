@@ -32,17 +32,24 @@ module.exports.spawnUntilEmpty = (commands, callback) ->
         else
             callback code
 
-
-isStarted = module.exports.isStarted = (callback) ->
-    url = "http://localhost:9104"
-    client = new Client url
-    client.get '/status', (err, res, body) ->
-        if err
-            setTimeout ->
-                isStarted callback
-            , 1 * 1000
-        else
-            callback()
+isStarted = module.exports.isStarted = (count, callback) ->
+    if count > 10
+        callback()
+    else
+        client = new Client "http://localhost:9104"
+        client.get '/status', (err, res, body) ->
+            if err
+                setTimeout ->
+                    isStarted count + 1, callback
+                , 1 * 1000
+            else
+                for app, status of body when app is 'controller'
+                    if status is true
+                        callback()
+                    else
+                        setTimeout ->
+                            isStarted count + 1, callback
+                        , 1 * 1000
 
 module.exports.isRunningOnWindows = -> return os.platform().match /^win/
 

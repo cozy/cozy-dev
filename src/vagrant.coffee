@@ -84,7 +84,7 @@ class exports.VagrantManager
             args: ['up']
         helpers.spawnUntilEmpty cmds, (code) ->
             log.info "Checking status ..."
-            helpers.isStarted ->
+            helpers.isStarted 0, ()->
                 callback code
 
     vagrantHalt: (callback)  ->
