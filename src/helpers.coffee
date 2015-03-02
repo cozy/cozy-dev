@@ -32,17 +32,31 @@ module.exports.spawnUntilEmpty = (commands, callback) ->
         else
             callback code
 
-
-isStarted = module.exports.isStarted = (callback) ->
-    url = "http://localhost:9104"
-    client = new Client url
-    client.get '/status', (err, res, body) ->
-        if err
-            setTimeout ->
-                isStarted callback
-            , 1 * 1000
-        else
-            callback()
+# Callback when vm is Stated
+# Called after vm:start function
+#    * Check if controller is started and has finished his autostart
+#    * Callback after 10 seconds even if controller isn't started
+isStarted = module.exports.isStarted = (count, callback) ->
+    if count > 10
+        callback()
+    else
+        # Retrieve status via proxy
+        client = new Client "http://localhost:9104"
+        client.get '/status', (err, res, body) ->
+            if err
+                # Proxy isn't started
+                setTimeout ->
+                    isStarted count + 1, callback
+                , 1 * 1000
+            else
+                # Proxy is started: check controller status
+                for app, status of body when app is 'controller'
+                    if status is true
+                        callback()
+                    else
+                        setTimeout ->
+                            isStarted count + 1, callback
+                        , 1 * 1000
 
 module.exports.isRunningOnWindows = -> return os.platform().match /^win/
 
