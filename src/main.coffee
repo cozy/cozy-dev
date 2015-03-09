@@ -269,8 +269,8 @@ program
 
 program
 .command "vm:update-image"
-.description "Updates the virtual machine with the latest version of " + \
-             "the cozy PaaS and core applications"
+.description "Updates the virtual machine image. " +
+            "Warning: this action deletes all your data in your virtualbox"
 .action ->
     confirmMessage = "You are about to update image of the virtual machine." + \
                      " All your data will be lost. Are you sure ?"
