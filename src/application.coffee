@@ -213,13 +213,16 @@ class exports.ApplicationManager
                 path = "cozy/cozy-#{app.name}/master/package.json"
                 github = new Client 'https://raw.github.com/'
                 github.get path, (err, res, data) ->
-                    if data?.version?
+                    if err? and err.code is 'ENOTFOUND'
+                        log.warn "You're in offline, can't check cozy stack versions."
+                        callback()
+                    else if data?.version?
                         if semver.gt(data.version, app.version)
                             log.warn "#{app.name}: "
                             log.warn "#{app.version} -> #{data.version}"
                             cb true
                         else
-                            cb()
+                            cb false
                     else
                         cb()
             , callback
@@ -244,6 +247,6 @@ class exports.ApplicationManager
                 if need
                     log.warn "A new version is available for cozy stack, " +
                         "you can enter cozy-dev vm:update to update it."
-                else
+                else if need?
                     log.info "Cozy-dev is up to date.".green
                 callback()
