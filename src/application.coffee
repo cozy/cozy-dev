@@ -207,6 +207,7 @@ class exports.ApplicationManager
         # Recover all stack application in database.
         dsClient = new Client 'http://localhost:9101'
         dsClient.post 'request/stackapplication/all/', {}, (err, res, body) ->
+            return callback() unless body and not err?
             async.eachSeries body, (app, cb) ->
                 app = app.value
                 # Check version with version stored in package.json
