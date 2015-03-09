@@ -75,6 +75,13 @@ class exports.VagrantManager
             args: ['-rf', 'Vagrantfile']
         helpers.spawnUntilEmpty cmds, callback
 
+    vagrantBoxUpdate: (callback) ->
+        cmds = []
+        cmds.push
+            name: 'vagrant'
+            args: ['box', 'update']
+        helpers.spawnUntilEmpty cmds, callback
+
     # perform "up" if the vm has been "halt"
     # perform "resume" if the VM has been "suspend"
     vagrantUp: (callback) ->

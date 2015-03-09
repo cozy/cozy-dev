@@ -284,15 +284,8 @@ program
             async.series [
                 (cb) -> vagrantManager.checkIfVagrantIsInstalled cb
                 (cb) ->
-                    log.info "Destroy the old virtual machine..."
-                    vagrantManager.vagrantBoxDestroy cb
-                (cb) ->
-                    log.info "Init the new virtual machine..."
-                    vagrantManager.vagrantBoxAdd cb
-                (cb) -> vagrantManager.vagrantInit cb
-                (cb) ->
-                    log.info "Start the new virtual machine..."
-                    vagrantManager.vagrantUp (code) -> cb null, code
+                    log.info "Update the old virtual machine..."
+                    vagrantManager.vagrantBoxUpdate cb
                 (cb) -> databaseManager.getCurrentDatabase cb
             ], (err, results) ->
                 if err
