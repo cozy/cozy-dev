@@ -100,9 +100,10 @@ program
 
 # Install application for cozy stack
 program
-.command "deploy [port] [slug]"
+.command "deploy <port> [slug]"
 .description "Push code and deploy app located in current directory " + \
-             "to your virtualbox."
+             "to your virtualbox. Argument port correspond to port used" + \
+             "by your application."
 .action (port, slug) ->
     port = 9250 unless port?
     # Recover manifest

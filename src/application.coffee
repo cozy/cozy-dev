@@ -209,7 +209,7 @@ class exports.ApplicationManager
         dsClient.post 'request/stackapplication/all/', {}, (err, res, body) ->
             async.eachSeries body, (app, cb) ->
                 app = app.value
-                # Check version with version is stored package.json
+                # Check version with version stored in package.json
                 path = "cozy/cozy-#{app.name}/master/package.json"
                 github = new Client 'https://raw.github.com/'
                 github.get path, (err, res, data) ->
