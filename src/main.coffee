@@ -135,8 +135,9 @@ program
             msg = "Application deployed in virtual machine."
             log.info msg.green
 
-            appUrl = "http://localhost:9104/#apps/#{app.slug}"
-            log.info "You can see your app on #{appUrl}"
+            unless app.name in ['home', 'data-system', 'proxy']
+                appUrl = "http://localhost:9104/#apps/#{app.slug}"
+                log.info "You can see your app on #{appUrl}"
 
 # Uninstall application for cozy stack
 program
