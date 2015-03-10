@@ -98,7 +98,7 @@ class exports.VagrantManager
         cmds = []
         cmds.push
             name: 'vagrant'
-            args: ['halt']
+            args: ['--force', 'halt']
         helpers.spawnUntilEmpty cmds, callback
 
     vagrantSuspend: (callback)  ->

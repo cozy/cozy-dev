@@ -214,20 +214,13 @@ haltOption = "Properly stop the virtual machine instead of simply " + \
              "suspending its execution"
 program
 .command "vm:stop"
-.option "-H, --halt", haltOption
 .description "Stops the Virtual machine with Vagrant."
-.action (args) ->
-    option = args.halt or null
-    if option? and option
-        caller = vagrantManager.vagrantHalt
-    else
-        caller = vagrantManager.vagrantSuspend
-
+.action () ->
     async.series [
         (cb) -> vagrantManager.checkIfVagrantIsInstalled cb
         (cb) ->
             log.info "Stopping the virtual machine...this may take a while."
-            caller (code) -> cb null, code
+            vagrantManager.vagrantHalt (code) -> cb null, code
     ], (err, results) ->
         [_, code] = results
 
