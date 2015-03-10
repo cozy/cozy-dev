@@ -100,9 +100,10 @@ program
 
 # Install application for cozy stack
 program
-.command "deploy [port] [slug]"
+.command "deploy <port> [slug]"
 .description "Push code and deploy app located in current directory " + \
-             "to your virtualbox."
+             "to your virtualbox. Argument port correspond to port used" + \
+             "by your application."
 .action (port, slug) ->
     port = 9250 unless port?
     # Recover manifest
@@ -134,8 +135,9 @@ program
             msg = "Application deployed in virtual machine."
             log.info msg.green
 
-            appUrl = "http://localhost:9104/#apps/#{app.slug}"
-            log.info "You can see your app on #{appUrl}"
+            unless app.name in ['home', 'data-system', 'proxy']
+                appUrl = "http://localhost:9104/#apps/#{app.slug}"
+                log.info "You can see your app on #{appUrl}"
 
 # Uninstall application for cozy stack
 program
@@ -212,20 +214,13 @@ haltOption = "Properly stop the virtual machine instead of simply " + \
              "suspending its execution"
 program
 .command "vm:stop"
-.option "-H, --halt", haltOption
 .description "Stops the Virtual machine with Vagrant."
-.action (args) ->
-    option = args.halt or null
-    if option? and option
-        caller = vagrantManager.vagrantHalt
-    else
-        caller = vagrantManager.vagrantSuspend
-
+.action () ->
     async.series [
         (cb) -> vagrantManager.checkIfVagrantIsInstalled cb
         (cb) ->
             log.info "Stopping the virtual machine...this may take a while."
-            caller (code) -> cb null, code
+            vagrantManager.vagrantHalt (code) -> cb null, code
     ], (err, results) ->
         [_, code] = results
 
@@ -268,8 +263,8 @@ program
 
 program
 .command "vm:update-image"
-.description "Updates the virtual machine with the latest version of " + \
-             "the cozy PaaS and core applications"
+.description "Updates the virtual machine image. " +
+            "Warning: this action deletes all your data in your virtualbox"
 .action ->
     confirmMessage = "You are about to update image of the virtual machine." + \
                      " All your data will be lost. Are you sure ?"
@@ -283,15 +278,8 @@ program
             async.series [
                 (cb) -> vagrantManager.checkIfVagrantIsInstalled cb
                 (cb) ->
-                    log.info "Destroy the old virtual machine..."
-                    vagrantManager.vagrantBoxDestroy cb
-                (cb) ->
-                    log.info "Init the new virtual machine..."
-                    vagrantManager.vagrantBoxAdd cb
-                (cb) -> vagrantManager.vagrantInit cb
-                (cb) ->
-                    log.info "Start the new virtual machine..."
-                    vagrantManager.vagrantUp (code) -> cb null, code
+                    log.info "Update the old virtual machine..."
+                    vagrantManager.vagrantBoxUpdate cb
                 (cb) -> databaseManager.getCurrentDatabase cb
             ], (err, results) ->
                 if err

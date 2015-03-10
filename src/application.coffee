@@ -229,28 +229,26 @@ class exports.ApplicationManager
         # Recover all stack application in database.
         dsClient = new Client 'http://localhost:9101'
         dsClient.post 'request/stackapplication/all/', {}, (err, res, body) ->
-
-            if body?
-                async.eachSeries body, (app, cb) ->
-                    app = app.value
-
-                    # Check version with version is stored package.json
-                    path = "cozy/cozy-#{app.name}/master/package.json"
-                    github = new Client 'https://raw.github.com/'
-                    github.get path, (err, res, data) ->
-                        if data?.version?
-                            if semver.gt(data.version, app.version)
-                                log.warn "#{app.name}: "
-                                log.warn "#{app.version} -> #{data.version}"
-                                cb true
-                            else
-                                cb()
+            return callback() unless body and not err?
+            async.eachSeries body, (app, cb) ->
+                app = app.value
+                # Check version with version stored in package.json
+                path = "cozy/cozy-#{app.name}/master/package.json"
+                github = new Client 'https://raw.github.com/'
+                github.get path, (err, res, data) ->
+                    if err? and err.code is 'ENOTFOUND'
+                        log.warn "You're in offline, can't check cozy stack versions."
+                        callback()
+                    else if data?.version?
+                        if semver.gt(data.version, app.version)
+                            log.warn "#{app.name}: "
+                            log.warn "#{app.version} -> #{data.version}"
+                            cb true
                         else
-                            cb()
-                , callback
-            else
-                callback()
-
+                            cb false
+                    else
+                        cb()
+            , callback
 
     # Check version :
     #   * For npm repository 'cozy-dev'
@@ -275,6 +273,6 @@ class exports.ApplicationManager
                 if need
                     log.warn "A new version is available for cozy stack, " +
                         "you can enter cozy-dev vm:update to update it."
-                else
+                else if need?
                     log.info "Cozy-dev is up to date.".green
                 callback()
