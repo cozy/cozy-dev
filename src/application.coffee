@@ -1,19 +1,21 @@
 require 'colors'
+
 async = require 'async'
-log = require('printit')
-    prefix: 'application'
-spawn = require('child_process').spawn
 path = require 'path'
+fs = require 'fs'
 exec = require('child_process').exec
-Client = require('request-json').JsonClient
+spawn = require('child_process').spawn
 semver = require 'semver'
 
-fs = require 'fs'
+log = require('printit')
+    prefix: 'application'
+Client = require('request-json').JsonClient
+
 helpers = require './helpers'
 VagrantManager = require('./vagrant').VagrantManager
 vagrantManager = new VagrantManager()
 
-Client = require("request-json").JsonClient
+
 Client::configure = (url, password, callback) ->
     @host = url
     @post "login", password: password, (err, res, body) ->
@@ -21,6 +23,7 @@ Client::configure = (url, password, callback) ->
             log.error "Cannot get authenticated".red
         else
             callback()
+
 
 class exports.ApplicationManager
 
@@ -38,16 +41,21 @@ class exports.ApplicationManager
         else
             callback()
 
+
     updateApp: (app, url, password, callback) ->
         log.info "Update #{app}..."
+
         @client.configure url, password, =>
             path = "api/applications/#{app}/update"
+
             @client.put path, {}, (err, res, body) =>
                 output = 'Update failed.'.red
                 @checkError err, res, body, 200, output, callback
 
+
     installApp: (app, url, repoUrl, password, callback) ->
         log.info "Install started for #{app}..."
+
         @client.configure url, password, =>
             app_descriptor =
                 name: app
@@ -58,13 +66,17 @@ class exports.ApplicationManager
                 output = 'Install failed.'.red
                 @checkError err, res, body, 201, output, callback
 
+
     uninstallApp: (app, url, password, callback) ->
         log.info "Uninstall started for #{app}..."
+
         @client.configure url, password, =>
             path = "api/applications/#{app}/uninstall"
+
             @client.del path, (err, res, body) =>
                 output = 'Uninstall failed.'.red
                 @checkError err, res, body, 200, output, callback
+
 
     stopApp: (app, callback) ->
         cmds = []
@@ -73,12 +85,14 @@ class exports.ApplicationManager
             args: ['ssh', '-c', "cozy-monitor stop #{app}"]
         helpers.spawnUntilEmpty cmds, callback
 
+
     startApp: (app, callback) ->
         cmds = []
         cmds.push
             name: 'vagrant'
             args: ['ssh', '-c', "cozy-monitor start #{app}"]
         helpers.spawnUntilEmpty cmds, callback
+
 
     checkStatus: (url, password, callback) ->
         checkApp = (app) =>
@@ -110,6 +124,7 @@ class exports.ApplicationManager
 
         @client.configure url, password, checkStatus
 
+
     isInstalled: (app, url, password, callback) =>
         @client.configure url, password, =>
             @client.get "apps/#{app.toLowerCase()}/", (err, res, body) ->
@@ -119,6 +134,7 @@ class exports.ApplicationManager
                     callback err, false
                 else
                     callback null, true
+
 
     addInDatabase: (manifest, callback) ->
         dsClient = new Client 'http://localhost:9101'
@@ -133,10 +149,12 @@ class exports.ApplicationManager
             else
                 callback()
 
+
     resetProxy: (callback) ->
         proxyClient = new Client 'http://localhost:9104'
         proxyClient.get 'routes/reset', (err, res, body) ->
             callback err
+
 
     removeFromDatabase: (manifest, callback) ->
         dsClient = new Client 'http://localhost:9101'
@@ -148,6 +166,7 @@ class exports.ApplicationManager
             name = app.name
             dsClient.del "data/#{app._id}/", (err, res, body) ->
                 callback err
+
 
     # Add port forward from host to virtual box for application <name>
     addPortForwarding: (name, port, callback) ->
@@ -186,6 +205,7 @@ class exports.ApplicationManager
                 return callback err if err?
                 fs.writeFile file, pid, callback
 
+
     # Remove port forward from host to virtual box for application <name>
     removePortForwarding: (name, port, callback) ->
         # Retrieve pid file
@@ -197,13 +217,15 @@ class exports.ApplicationManager
             fs.unlink file
             try
                 # Kill ssh process
-                process.kill(pid)
+                process.kill pid
             catch
                 log.info 'No process.'
         callback()
 
+
     # Check stack versions
     stackVersions: (callback) ->
+
         # Recover all stack application in database.
         dsClient = new Client 'http://localhost:9101'
         dsClient.post 'request/stackapplication/all/', {}, (err, res, body) ->
@@ -235,13 +257,16 @@ class exports.ApplicationManager
     checkVersions: (appData, callback) =>
         # Check version for 'cozy-dev'
         log.info 'Check cozy-dev version :'
+
         child = exec 'npm show cozy-dev version', (err, stdout, stderr) =>
             version = stdout.replace /\n/g, ''
+
             if semver.gt(version, appData.version)
                 log.warn 'A new version is available for cozy-dev, ' +
                     "you can enter 'npm -g update cozy-dev' to update it."
             else
                 log.info "Cozy-dev is up to date.".green
+
             # Check version for cozy stack
             log.info 'Check cozy versions : '
             @stackVersions (need) ->
