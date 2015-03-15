@@ -197,13 +197,12 @@ program
         (cb) -> vagrantManager.checkIfVagrantIsInstalled cb
         (cb) ->
             log.info "Starting the virtual machine...this may take a while."
-            vagrantManager.vagrantUp (code) -> cb null, code
+            vagrantManager.vagrantUp cb
         (cb) -> vagrantManager.virtualMachineStatus (status) -> cb()
         (cb) -> appManager.checkVersions appData, cb
     ], (err, results) ->
-        [_, code] = results
 
-        if code is 0
+        if not err?
             msg = "The virtual machine has been successfully started."
             log.info msg.green
         else
