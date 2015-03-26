@@ -117,11 +117,11 @@ module.exports = class DatabaseManager
         command = """
         vagrant ssh -c "sudo cat #{CONTROLLER_CONFIG_PATH}"
         """
-        exec command, (err, stderr, stdout) ->
+        exec command, (err, stdout, stderr) ->
 
             try
-                config = JSON.stringify stdout
-                databaseName = config?['data-system']?['DB_NAME']
+                config = JSON.parse stdout
+                databaseName = config?.env?['data-system']?['DB_NAME']
 
                 # default is cozy
                 databaseName ?= 'cozy'
