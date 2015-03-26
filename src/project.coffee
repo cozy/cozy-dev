@@ -82,7 +82,7 @@ class exports.ProjectManager
 
             if manifest['icon-path'] and fs.existsSync manifest['icon-path']
                 # Icon defined in package.json
-                manfest.iconPath = manifest['icon-path']
+                manifest.iconPath = manifest['icon-path']
                 manifest.iconType = 'png'
 
             else if fs.existsSync(svgPath)
