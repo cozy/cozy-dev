@@ -48,9 +48,10 @@ module.exports = class DatabaseManager
             # write config
             (rawConfig, next) ->
                 # escape JSON for the bash command
-                rawConfig = rawConfig.replace /"/g, "\""
+                rawConfig = rawConfig.replace /"/g, "\\\\\\\""
                 subCommand = """
-                echo \\"#{rawConfig}\\" >> sudo #{CONTROLLER_CONFIG_PATH}
+                echo \\"#{rawConfig}\\" |
+                sudo tee #{CONTROLLER_CONFIG_PATH} >> /dev/null
                 """
                 command = """
                 vagrant ssh -c "#{subCommand}"
@@ -117,6 +118,7 @@ module.exports = class DatabaseManager
         vagrant ssh -c "sudo cat #{CONTROLLER_CONFIG_PATH}"
         """
         exec command, (err, stderr, stdout) ->
+
             try
                 config = JSON.stringify stdout
                 databaseName = config?['data-system']?['DB_NAME']
