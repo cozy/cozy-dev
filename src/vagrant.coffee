@@ -155,7 +155,6 @@ class exports.VagrantManager
             couchdb: 5984
             datasystem: 9101
             controller: 9002
-            indexer: 9102
             proxy: 9104
         client.get '/status', (err, res, body) ->
             if err
