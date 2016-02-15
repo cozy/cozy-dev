@@ -24,7 +24,9 @@ module.exports = class DatabaseManager
                 log.info 'Getting current configuration...'
                 exec command, (err, stderr, stdout) ->
                     if err?
-                        next err
+                        log.info 'No custom config found, creating one...'
+                        config = '{}'
+                        next null, config
                     else
                         next null, stdout
 
@@ -118,9 +120,8 @@ module.exports = class DatabaseManager
         vagrant ssh -c "sudo cat #{CONTROLLER_CONFIG_PATH}"
         """
         exec command, (err, stdout, stderr) ->
-
             try
-                config = JSON.parse stdout
+                config = if err then {} else JSON.parse stdout
                 databaseName = config?.env?['data-system']?['DB_NAME']
 
                 # default is cozy
