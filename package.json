@@ -33,13 +33,14 @@
     "prepublish": "cake build"
   },
   "dependencies": {
-    "commander": "2.4.0",
     "async": "0.9.0",
-    "request-json": "0.4.13",
     "colors": "0.6.2",
-    "mozilla-version-comparator": "1.0.2",
-    "printit": "0.1.3",
+    "commander": "2.4.0",
     "inquirer": "0.8.0",
+    "mozilla-version-comparator": "1.0.2",
+    "parentpath": "0.2.0",
+    "printit": "0.1.3",
+    "request-json": "0.4.13",
     "semver": "4.3.1"
   },
   "devDependencies": {

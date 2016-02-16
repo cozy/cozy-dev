@@ -73,7 +73,10 @@ class exports.ProjectManager
             manifest.autostop = false
             manifest.password = 'test'
             manifest.docType = "Application"
+            manifest.type = manifest["cozy-type"] or {}
             manifest.port = port
+            if manifest.type is 'static'
+                manifest.path = "/srv/#{manifest.slug.toLowerCase()}"
 
             # Recover icon
             basePath = path.join process.cwd(), "client", "app", "assets", "icons"
