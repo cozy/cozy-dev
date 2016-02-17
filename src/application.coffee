@@ -3,8 +3,8 @@ require 'colors'
 async = require 'async'
 path = require 'path'
 fs = require 'fs'
-exec = require('child_process').exec
-spawn = require('child_process').spawn
+pp = require 'parentpath'
+{spawn, exec} = require 'child_process'
 semver = require 'semver'
 
 log = require('printit')
@@ -141,10 +141,10 @@ class exports.ApplicationManager
         dsClient.post 'data/', manifest, (err, res, body) ->
             return callback err if err?
             if manifest.iconPath?
-                path = "data/#{body._id}/attachments/"
+                iconPath = "data/#{body._id}/attachments/"
                 data = name: "icon.#{manifest.iconType}"
                 filePath = manifest.iconPath
-                dsClient.sendFile path, filePath, data, (err, res, body) ->
+                dsClient.sendFile iconPath, filePath, data, (err, res, body) ->
                     callback err
             else
                 callback()
@@ -166,6 +166,16 @@ class exports.ApplicationManager
             name = app.name
             dsClient.del "data/#{app._id}/", (err, res, body) ->
                 callback err
+
+
+    # Factory for configuration, regarding if the app is `static` or not
+    configLocalApp: (action, app, callback) ->
+        suffix = if app.type is 'static' then 'StaticPath' else 'PortForwarding'
+        method = "#{action}#{suffix}"
+        if action is 'add'
+            @[method](app.name, app.port, callback)
+        else
+            @[method](app.name, callback)
 
 
     # Add port forward from host to virtual box for application <name>
@@ -206,8 +216,18 @@ class exports.ApplicationManager
                 fs.writeFile file, pid, callback
 
 
+    # Link the app from vagrant synced_folder to app `path`
+    addStaticPath: (name, appPath, callback) ->
+        pp 'Vagrantfile', (dir) ->
+            appPath = "/vagrant/#{path.relative dir, path.resolve appPath}"
+            srvPath = "/srv/#{name.toLowerCase()}"
+
+            cmd = "vagrant ssh --command 'sudo ln -sf #{appPath} #{srvPath}'"
+            exec cmd, callback
+
+
     # Remove port forward from host to virtual box for application <name>
-    removePortForwarding: (name, port, callback) ->
+    removePortForwarding: (name, callback) ->
         # Retrieve pid file
         file = helpers.getPidFile(name)
         if fs.existsSync file
@@ -221,6 +241,11 @@ class exports.ApplicationManager
             catch
                 log.info 'No process.'
         callback()
+
+
+    removeStaticPath: (name, callback) ->
+        cmd = "vagrant ssh --command 'sudo rm -f /srv/#{name.toLowerCase()}'"
+        exec cmd, callback
 
 
     # Check stack versions

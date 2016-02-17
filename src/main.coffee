@@ -101,9 +101,10 @@ program
 # Install application for cozy stack
 program
 .command "deploy <port> [slug]"
-.description "Push code and deploy app located in current directory " + \
-             "to your virtualbox. Argument port correspond to port used" + \
-             "by your application."
+.description """Push code and deploy app located in current directory to your \
+             virtualbox. Argument port correspond to port used by your \
+             application, or to the path containing your built static assets \
+             for a server-less app."""
 .action (port, slug) ->
     port = 9250 unless port?
     # Recover manifest
@@ -127,7 +128,7 @@ program
             steps = [
                 (cb) -> appManager.addInDatabase app, cb
                 (cb) -> appManager.resetProxy cb
-                (cb) -> appManager.addPortForwarding app.name, app.port, cb
+                (cb) -> appManager.configLocalApp 'add', app, cb
             ]
 
         async.series steps, (err) ->
@@ -165,7 +166,7 @@ program
             steps = [
                 (cb) -> appManager.removeFromDatabase app, cb
                 (cb) -> appManager.resetProxy cb
-                (cb) -> appManager.removePortForwarding app.name, app.port, cb
+                (cb) -> appManager.configLocalApp 'remove', app, cb
             ]
 
         async.series steps, (err) ->
