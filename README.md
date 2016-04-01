@@ -31,7 +31,7 @@ cozy-dev vm:start
 cozy-dev vm:stop
 ```
 
-More information about CozyCloud and virtual machines in [the documentation](http://cozy.io/hack/getting-started/setup-environment.html#for-applications-that-take-advantage-of-the-data-system).
+More information about CozyCloud and virtual machines in [the documentation](https://dev.cozy.io/#set-up-the-development-environment).
 
 ## Hack
 
