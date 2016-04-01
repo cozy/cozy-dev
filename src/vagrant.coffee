@@ -15,7 +15,7 @@ class exports.VagrantManager
     constructor: ->
         @baseBoxName = 'cozycloud/cozy-dev'
 
-        @docURL = "http://cozy.io/hack/getting-started/setup-environment.html"
+        @docURL = "https://dev.cozy.io/#set-up-the-development-environment"
 
         # Minimum required version to make Vagrant work with cozy-dev
         @minimumVagrant = "1.5.0"
