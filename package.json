@@ -30,6 +30,7 @@
     "node": "*"
   },
   "scripts": {
+    "build": "cake build",
     "prepublish": "cake build"
   },
   "dependencies": {
