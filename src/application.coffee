@@ -219,7 +219,7 @@ class exports.ApplicationManager
     # Link the app from vagrant synced_folder to app `path`
     addStaticPath: (name, appPath, callback) ->
         pp 'Vagrantfile', (dir) ->
-            appPath = "/vagrant/#{path.relative dir, path.resolve appPath}"
+            appPath = "/vagrant/#{path.relative(dir, path.resolve(appPath))}"
             srvPath = "/srv/#{name.toLowerCase()}"
 
             cmd = "vagrant ssh --command 'sudo ln -sf #{appPath} #{srvPath}'"

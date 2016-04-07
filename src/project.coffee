@@ -49,7 +49,9 @@ class exports.ProjectManager
             else
                 install()
 
-    recoverManifest: (port, cb) ->
+    recoverManifest: (options, cb) ->
+        {slug, port} = options
+
         unless fs.existsSync 'package.json'
             log.error "Cannot read package.json. " +
                 "This function should be called in root application folder."
@@ -69,6 +71,13 @@ class exports.ProjectManager
             manifest.slug = manifest.name
             manifest.displayName =
                 manifest['cozy-displayName'] or manifest.slug
+
+            # Slug can be overriden by command's parameter
+            if slug?
+                manifest.name = slug
+                manifest.slug = slug
+                manifest.displayName += " (#{slug})"
+
             manifest.state = "installed"
             manifest.autostop = false
             manifest.password = 'test'

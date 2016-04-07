@@ -108,14 +108,9 @@ program
 .action (port, slug) ->
     port = 9250 unless port?
     # Recover manifest
-    projectManager.recoverManifest port, (err, app) ->
+    options = {slug, port}
+    projectManager.recoverManifest options, (err, app) ->
         return log.error err if err?
-
-        # Slug can be overriden by command's parameter
-        if slug?
-            app.name = slug
-            app.slug = slug
-            app.displayName += " (#{slug})"
 
         if app.name in ['home', 'data-system', 'proxy']
             # Stack application
@@ -146,14 +141,11 @@ program
 .description "Undeploy application"
 .action (slug) ->
     # Recover manifest
-    projectManager.recoverManifest 9250, (err, app) ->
+    options =
+        slug: slug
+        port: 9250
+    projectManager.recoverManifest options, (err, app) ->
         return log.error err if err?
-
-        # Slug can be overriden by command's parameter
-        if slug?
-            app.name = slug
-            app.slug = slug
-            app.displayName += " (#{slug})"
 
         if app.name in ['home', 'data-system', 'proxy']
             # Stack application
