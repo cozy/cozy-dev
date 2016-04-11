@@ -15,7 +15,6 @@ Client::configure = (url, password, callback) ->
         else
             callback()
 
-client = new Client ""
 
 RepoManager = require('./repository').RepoManager
 repoManager = new RepoManager()

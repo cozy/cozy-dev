@@ -1,6 +1,4 @@
 require 'colors'
-path = require 'path'
-fs = require 'fs'
 log = require('printit')
     prefix: 'vagrant    '
 Client = require('request-json').JsonClient

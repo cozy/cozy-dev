@@ -5,7 +5,6 @@ async = require 'async'
 fs = require 'fs'
 path = require 'path'
 
-helpers = require './helpers'
 {RepoManager} = require './repository'
 {ApplicationManager} = require './application'
 
