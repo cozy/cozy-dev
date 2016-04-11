@@ -31,7 +31,8 @@
   },
   "scripts": {
     "build": "cake build",
-    "prepublish": "cake build"
+    "prepublish": "cake build",
+    "lint": "coffeelint ./src"
   },
   "dependencies": {
     "async": "0.9.0",
@@ -45,6 +46,6 @@
     "semver": "4.3.1"
   },
   "devDependencies": {
-    "coffeelint": "1.6.0"
+    "coffeelint": "1.15.0"
   }
 }
