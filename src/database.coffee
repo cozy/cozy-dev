@@ -1,5 +1,4 @@
 require 'colors'
-fs = require 'fs'
 {exec} = require 'child_process'
 async = require 'async'
 log = require('printit')

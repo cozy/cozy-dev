@@ -1,10 +1,12 @@
 require 'colors'
 program = require 'commander'
-path = require 'path'
 log = require('printit')
     prefix: 'cozy-dev   '
 inquirer = require 'inquirer'
 async = require 'async'
+open = require 'open'
+fs = require 'fs'
+path = require 'path'
 
 Client = require("request-json").JsonClient
 Client::configure = (url, password, callback) ->
@@ -15,7 +17,6 @@ Client::configure = (url, password, callback) ->
         else
             callback()
 
-client = new Client ""
 
 RepoManager = require('./repository').RepoManager
 repoManager = new RepoManager()
@@ -27,6 +28,7 @@ VagrantManager = require('./vagrant').VagrantManager
 vagrantManager = new VagrantManager()
 DatabaseManager = require('./database')
 databaseManager = new DatabaseManager()
+staticProxy = require('./static-proxy')
 
 helpers = require './helpers'
 
@@ -134,6 +136,52 @@ program
             unless app.name in ['home', 'data-system', 'proxy']
                 appUrl = "http://localhost:9104/#apps/#{app.slug}"
                 log.info "You can see your app on #{appUrl}"
+
+command = program
+.command "client-app-proxy <url> [path]"
+.option "--no-cleanup", 'Leave the proxy app on cozy.'
+.description "Deploy your static app on a running online cozy."
+.action (url, appPath) ->
+    unless url
+        log.warn "Usage cozy-dev app-proxy xxx.cozycloud.cc [/path/to/app]"
+        return
+
+    appPath ?= process.cwd()
+    packageJSON = path.join appPath, 'package.json'
+
+    unless appPath and fs.existsSync packageJSON
+        log.error "Cannot read package.json at " + packageJSON +
+            ". This function should be called in root application folder."
+        return
+
+    helpers.promptPassword('Cozy password for ' + url) (err, password) ->
+
+        return log.error err if err
+
+        staticProxy.start appPath, url, password, (err, server, proxyurl) ->
+            secondExit = false
+
+            if err
+                console.log(err.stack);
+                return setTimeout (-> process.exit(1)) , 10
+
+            log.info "Bench setup at #{proxyurl}"
+            open proxyurl
+            console.log("cleanup", program.cleanup)
+            return if command.cleanup is false
+            console.log("setup clean")
+
+            # attempt to remove app from cozy
+            exitHandler = (err) ->
+                console.log(err.stack) if err
+                return process.exit() if (secondExit)
+                console.log('cleaning up')
+                secondExit = true
+                staticProxy.removeApplication (-> process.exit())
+
+            process.on('exit', exitHandler);
+            process.on('SIGINT', exitHandler);
+            process.on('uncaughtException', exitHandler);
 
 # Uninstall application for cozy stack
 program
