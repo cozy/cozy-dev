@@ -46,6 +46,7 @@ ensureApplication = (callback) ->
     options = headers: {cookie}
     console.log "CHECK IF #{BENCH_SLUG} IS INSTALLED ON #{remoteCozy}"
     newClient(remoteCozy, options).get '/api/applications', (err, res, apps) ->
+        return callback err if err
         exists = apps.rows.find (app) -> app.slug is BENCH_SLUG
         if exists
             callback null, exists
