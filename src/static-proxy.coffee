@@ -47,11 +47,12 @@ ensureApplication = (callback) ->
     console.log "CHECK IF #{BENCH_SLUG} IS INSTALLED ON #{remoteCozy}"
     newClient(remoteCozy, options).get '/api/applications', (err, res, apps) ->
         return callback err if err
-        exists = apps.rows.find (app) -> app.slug is BENCH_SLUG
-        if exists
-            callback null, exists
-        else
-            createApplication callback
+        for row in apps.rows
+            if row.slug is BENCH_SLUG
+                return callback null, row
+
+        # if we get here, the application isnt installed.
+        createApplication callback
 
 prepareRemote = (password, callback)->
     loginRemote password, (err) ->
