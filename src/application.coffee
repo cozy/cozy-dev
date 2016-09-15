@@ -227,7 +227,9 @@ class exports.ApplicationManager
 
 
     # Remove port forward from host to virtual box for application <name>
-    removePortForwarding: (name, callback) ->
+    removePortForwarding: (name, port, callback) ->
+        callback = port unless callback
+
         # Retrieve pid file
         file = helpers.getPidFile(name)
         if fs.existsSync file
