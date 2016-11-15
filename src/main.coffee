@@ -139,12 +139,12 @@ program
                 log.info "You can see your app on #{appUrl}"
 
 command = program
-.command "client-app-proxy <url> [path]"
+.command "proxify <cozy-url> [path]"
 .option "--no-cleanup", 'Leave the proxy app on cozy.'
 .description "Deploy your static app on a running online cozy."
 .action (url, appPath) ->
     unless url
-        log.warn "Usage cozy-dev app-proxy xxx.cozycloud.cc [/path/to/app]"
+        log.warn "Usage cozy-dev proxify xxx.cozycloud.cc [/path/to/app]"
         return
 
     appPath ?= process.cwd()
