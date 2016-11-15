@@ -60,9 +60,10 @@ prepareRemote = (password, callback)->
         ensureApplication (err, app) ->
             return callback err if err
 
+            protocol = if remoteCozy.match /^https/ then https else http
             proxy = httpProxy.createServer
                 target: remoteCozy,
-                agent: https.globalAgent,
+                agent: protocol.globalAgent,
                 headers:
                     host: url.parse(remoteCozy).host
                     cookie: cookie
