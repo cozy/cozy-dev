@@ -7,6 +7,7 @@ async = require 'async'
 open = require 'open'
 fs = require 'fs'
 path = require 'path'
+parentpath = require 'parentpath'
 
 Client = require("request-json").JsonClient
 Client::configure = (url, password, callback) ->
@@ -147,11 +148,16 @@ command = program
         return
 
     appPath ?= process.cwd()
-    packageJSON = path.join appPath, 'package.json'
 
-    unless appPath and fs.existsSync packageJSON
-        log.error "Cannot read package.json at " + packageJSON +
-            ". This function should be called in root application folder."
+    # Get root path where package.json is located
+    process.chdir appPath
+    rootPath = parentpath.sync 'package.json'
+
+    unless appPath and rootPath
+        log.error """
+            Cannot find a root path containing a package.json file.
+            This function should be called in root application folder.
+        """
         return
 
     helpers.promptPassword('Cozy password for ' + url) (err, password) ->
