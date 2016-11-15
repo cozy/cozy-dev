@@ -6,6 +6,7 @@ var url = require('url')
   , https = require('https')
   , npmconf = require('npmconf')
   , tunnel = require('tunnel-agent')
+  , log = require('printit')({prefix: 'tunnel\t'})
 
 function parseURL(uri) {
     if(!uri) return null
@@ -18,15 +19,15 @@ function pick(what, obj) {
     for(var i = 0, l= opts.length; i < l; i++){
         var value = obj[opts[i]]
         if(value && value != '')
-            console.log('possible', what, 'from', opts[i], '=', value)
+            log.info('possible', what, 'from', opts[i], '=', value)
             selected = value
     }
-    console.log('selected', what, selected)
+    log.info('selected', what, selected)
     return selected
 }
 
 function logOptions(label, options){
-    console.log(label, options.method, options.protocol, options.host,
+    log.info(label, options.method, options.protocol, options.host,
         options.port, options.path,
         (options.__tunnelSetup ? '__tunnelSetup' : ''), 'agent=' +
         (options.agent && options.agent.constructor.name) );
@@ -87,7 +88,6 @@ function replaceRequest(protocol, options, callback){
 }
 
 function applyTunnelProxy(options, proxy) {
-    // console.log(new Error().stack.split("\n").slice(3, 4).join("\n"))
     // Setup Proxy Headers and Proxy Headers Host
     // Only send the Proxy White Listed Header names
     var proxyHeaders = {}
@@ -136,7 +136,7 @@ function applyTunnelProxy(options, proxy) {
         logOptions('  CHANGED', options)
     }else{
         logOptions('  ADDED AGENT', options)
-        console.log(new Error().stack.split("\n").slice(2, 4).join("\n"))
+        log.error(new Error().stack.split("\n").slice(2, 4).join("\n"))
     }
 
 }

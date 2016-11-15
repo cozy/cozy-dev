@@ -1,10 +1,13 @@
-httpProxy = require('http-proxy')
+httpProxy = require 'http-proxy'
 http = require 'http'
 https = require 'https'
 send = require 'send'
 path = require 'path'
 url = require 'url'
 {newClient} = require 'request-json-light'
+
+log = require('printit')
+    prefix: 'profixy\t'
 
 APP =
     author: name: "test"
@@ -24,7 +27,7 @@ remoteCozy = null
 
 
 loginRemote = (password, callback) ->
-    console.log "LOGIN #{remoteCozy}"
+    log.info "LOGIN #{remoteCozy}"
     newClient(remoteCozy).post '/login', {password}, (err, res, body) ->
         err ?= body.error
         cookie = res?.headers?['set-cookie']
@@ -36,14 +39,14 @@ createApplication = (callback) ->
     urlpath = '/api/applications/install'
     options = headers: {cookie}
 
-    console.log "CREATE APPLICATION #{APP.slug} on #{remoteCozy}"
+    log.info "CREATE APPLICATION #{APP.slug} on #{remoteCozy}"
     newClient(remoteCozy, options).post urlpath, APP, (err, res, body) ->
         err ?= new Error(body.message) if body.error
         callback err, body
 
 ensureApplication = (callback) ->
     options = headers: {cookie}
-    console.log "CHECK IF #{APP.slug} IS INSTALLED ON #{remoteCozy}"
+    log.info "CHECK IF #{APP.slug} IS INSTALLED ON #{remoteCozy}"
     newClient(remoteCozy, options).get '/api/applications', (err, res, apps) ->
         return callback err if err
         for row in apps.rows
@@ -74,13 +77,13 @@ prepareLocal = ->
 
 startServer = (approot, proxy, callback) ->
 
-    proxy.on 'error', (err) -> console.log err
+    proxy.on 'error', (err) -> log.error err
 
     server = http.createServer (req, res) ->
         match = req.url.match(////apps/#{APP.slug}/(.*)///)
         if match?
             filepath = path.join approot, match[1] or 'index.html'
-            console.log req.url, '->', filepath
+            log.info req.url, '->', filepath
             send(req, filepath).pipe res
         else
             proxy.web req, res
@@ -93,7 +96,7 @@ startServer = (approot, proxy, callback) ->
 
 module.exports.start = (approot, pkg, remote, password, callback = ->) ->
 
-    console.log "SHELL FOR ", approot, "REMOTE = ", remote
+    log.info "SHELL FOR ", approot, "REMOTE = ", remote
 
     APP.name        = pkg.name
     APP.description = pkg.description
@@ -108,11 +111,11 @@ module.exports.start = (approot, pkg, remote, password, callback = ->) ->
         if remote
             remoteCozy = remote
             prepareRemote password, (err, app, proxy) ->
-                return console.log err if err
+                return log.error err if err
                 startServer approot, proxy, callback
         else
             prepareLocal (err, app, proxy) ->
-                return console.log err if err
+                return log.error err if err
                 startServer approot, proxy, callback
 
 module.exports.removeApplication = (callback) ->

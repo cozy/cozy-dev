@@ -1,7 +1,7 @@
 require 'colors'
 program = require 'commander'
 log = require('printit')
-    prefix: 'cozy-dev   '
+    prefix: 'cozy-dev\t'
 inquirer = require 'inquirer'
 async = require 'async'
 open = require 'open'
@@ -170,20 +170,23 @@ command = program
             secondExit = false
 
             if err
-                console.log(err.stack);
+                log.error err.stack
                 return setTimeout (-> process.exit(1)) , 10
 
             log.info "Bench setup at #{proxyurl}"
             open proxyurl
-            console.log("cleanup", program.cleanup)
+
+            log.info "cleanup", program.cleanup
+
             return if command.cleanup is false
-            console.log("setup clean")
+            log.info "setup clean"
 
             # attempt to remove app from cozy
             exitHandler = (err) ->
-                console.log(err.stack) if err
+                log.error err.stack if err
                 return process.exit() if (secondExit)
-                console.log('cleaning up')
+
+                log.info 'cleaning up'
                 secondExit = true
                 staticProxy.removeApplication (-> process.exit())
 
