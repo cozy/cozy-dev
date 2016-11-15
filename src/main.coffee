@@ -164,7 +164,9 @@ command = program
 
         return log.error err if err
 
-        staticProxy.start appPath, url, password, (err, server, proxyurl) ->
+        pkg = require path.join rootPath, 'package.json'
+
+        staticProxy.start appPath, pkg, url, password, (err, server, proxyurl) ->
             secondExit = false
 
             if err
