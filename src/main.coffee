@@ -142,16 +142,18 @@ command = program
 .command "proxify <cozy-url> [path]"
 .option "--no-cleanup", 'Leave the proxy app on cozy.'
 .description "Deploy your static app on a running online cozy."
-.action (url, appPath) ->
+.action (url, appPath = '.') ->
     unless url
         log.warn "Usage cozy-dev proxify xxx.cozycloud.cc [/path/to/app]"
         return
 
-    appPath ?= process.cwd()
+    cwd = process.cwd()
+    appPath = path.join(cwd, appPath)
 
     # Get root path where package.json is located
     process.chdir appPath
     rootPath = parentpath.sync 'package.json'
+    process.chdir cwd
 
     unless appPath and rootPath
         log.error """
