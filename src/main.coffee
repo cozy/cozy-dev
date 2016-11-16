@@ -1,12 +1,13 @@
 require 'colors'
 program = require 'commander'
 log = require('printit')
-    prefix: 'cozy-dev   '
+    prefix: 'cozy-dev\t'
 inquirer = require 'inquirer'
 async = require 'async'
 open = require 'open'
 fs = require 'fs'
 path = require 'path'
+parentpath = require 'parentpath'
 
 Client = require("request-json").JsonClient
 Client::configure = (url, password, callback) ->
@@ -138,44 +139,54 @@ program
                 log.info "You can see your app on #{appUrl}"
 
 command = program
-.command "client-app-proxy <url> [path]"
+.command "proxify <cozy-url> [path]"
 .option "--no-cleanup", 'Leave the proxy app on cozy.'
 .description "Deploy your static app on a running online cozy."
 .action (url, appPath) ->
     unless url
-        log.warn "Usage cozy-dev app-proxy xxx.cozycloud.cc [/path/to/app]"
+        log.warn "Usage cozy-dev proxify xxx.cozycloud.cc [/path/to/app]"
         return
 
     appPath ?= process.cwd()
-    packageJSON = path.join appPath, 'package.json'
 
-    unless appPath and fs.existsSync packageJSON
-        log.error "Cannot read package.json at " + packageJSON +
-            ". This function should be called in root application folder."
+    # Get root path where package.json is located
+    process.chdir appPath
+    rootPath = parentpath.sync 'package.json'
+
+    unless appPath and rootPath
+        log.error """
+            Cannot find a root path containing a package.json file.
+            This function should be called in root application folder.
+        """
         return
 
     helpers.promptPassword('Cozy password for ' + url) (err, password) ->
 
         return log.error err if err
 
-        staticProxy.start appPath, url, password, (err, server, proxyurl) ->
+        pkg = require path.join rootPath, 'package.json'
+
+        staticProxy.start appPath, pkg, url, password, (err, server, proxyurl) ->
             secondExit = false
 
             if err
-                console.log(err.stack);
+                log.error err.stack
                 return setTimeout (-> process.exit(1)) , 10
 
             log.info "Bench setup at #{proxyurl}"
             open proxyurl
-            console.log("cleanup", program.cleanup)
+
+            log.info "cleanup", program.cleanup
+
             return if command.cleanup is false
-            console.log("setup clean")
+            log.info "setup clean"
 
             # attempt to remove app from cozy
             exitHandler = (err) ->
-                console.log(err.stack) if err
+                log.error err.stack if err
                 return process.exit() if (secondExit)
-                console.log('cleaning up')
+
+                log.info 'cleaning up'
                 secondExit = true
                 staticProxy.removeApplication (-> process.exit())
 
