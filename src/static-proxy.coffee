@@ -14,7 +14,7 @@ APP =
     comment: "community contribution"
     description: "test shell for app development"
     displayName: "Cozy Shell"
-    git: "https://github.com/dev/null.git"
+    git: "https://github.com/cozy-labs/cozy-browser-shell.git"
     icon: "main_icon.png"
     type: "static"
     name: 'cozy-proxified-app'
@@ -103,7 +103,7 @@ module.exports.start = (approot, pkg, remote, password, callback = ->) ->
     APP.displayName = "#{pkg.displayName or pkg['cozy-displayName']} proxified"
     APP.name        = pkg.name
     APP.slug        = "#{pkg.name}-proxified"
-    APP.git         = pkg.repository.url
+    # APP.git         = pkg.repository.url
 
     tunnel = require('../misc/tunnel')
     tunnel.initialize ->
