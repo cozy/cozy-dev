@@ -70,7 +70,7 @@ class exports.RepoManager
             opts: cwd: appPath
         cmds.push
             name: "git"
-            args: ['commit', '-a', '-m', '"First commit."']
+            args: ['commit', '-a', '-m', '"Initial commit"']
             opts: cwd: appPath
         cmds.push
             name: "git"
