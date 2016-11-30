@@ -88,15 +88,14 @@ program
                     cb null, password, answers.url
 
             (password, url, cb) ->
-                projectManager.newProject(appname, isCoffee, url, user, \
-                                         password, cb)
+                projectManager.newProject(appname, url, user, password, cb)
 
         ], ->
             log.info "Project creation finished.".green
             process.exit 0
     else
         log.info "Create project folder: #{appname}"
-        repoManager.createLocalRepo appname, isCoffee, ->
+        repoManager.createLocalRepo appname, ->
             log.info "Project creation finished.".green
 
 # Install application for cozy stack

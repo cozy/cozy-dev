@@ -9,13 +9,10 @@ helpers = require './helpers'
 
 class exports.RepoManager
 
-    createLocalRepo: (appname, isCoffee, callback) ->
+    createLocalRepo: (appname, callback) ->
 
         cmds = []
-        unless isCoffee
-            repo = "https://github.com/cozy/cozy-template.git"
-        else
-            repo = "https://github.com/cozy/cozy-template-coffee.git"
+        repo = "https://github.com/cozy/cozy-template.git"
 
         appPath = "#{process.cwd()}/#{appname}"
 

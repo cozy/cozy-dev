@@ -13,14 +13,14 @@ class exports.ProjectManager
     repoManager: new RepoManager()
     appManager: new ApplicationManager()
 
-    newProject: (name, isCoffee, url, user, password, callback) ->
+    newProject: (name, url, user, password, callback) ->
         credentials =
             password: password
             username: user
 
         async.series [
             (cb) => @repoManager.createGithubRepo credentials, name, cb
-            (cb) => @repoManager.createLocalRepo name, isCoffee, cb
+            (cb) => @repoManager.createLocalRepo name, cb
             (cb) => @repoManager.connectRepos user, name, cb
             (cb) => @repoManager.saveConfig user, name, url, cb
         ], callback
