@@ -18,7 +18,7 @@ class exports.RepoManager
 
         cmds.push
             name: "git"
-            args: ['clone', repo,  appname]
+            args: ['clone', '-b', 'master', repo, appname]
             opts: cwd: process.cwd()
         cmds.push
             name: "git"
