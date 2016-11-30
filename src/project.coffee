@@ -22,7 +22,6 @@ class exports.ProjectManager
             (cb) => @repoManager.createGithubRepo credentials, name, cb
             (cb) => @repoManager.createLocalRepo name, cb
             (cb) => @repoManager.connectRepos user, name, cb
-            (cb) => @repoManager.saveConfig user, name, url, cb
         ], callback
 
 

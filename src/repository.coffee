@@ -41,10 +41,6 @@ class exports.RepoManager
             name: "npm"
             args: ['install']
             opts: cwd: appPath
-        cmds.push
-            name: "npm"
-            args: ['install']
-            opts: cwd: "#{appPath}/client"
 
         log.info "Creating the project structure..."
 
@@ -98,25 +94,4 @@ class exports.RepoManager
                 log.error "Cannot create repository on Github.".red
                 log.error body
             else
-                callback()
-
-    saveConfig: (githubUser, app, url, callback) ->
-        data =
-        """
-            {
-                "cozy": {
-                    "appName": "#{app}",
-                    "url": "#{url}"
-                },
-                "github": {
-                    "user": "#{githubUser}",
-                    "repoName": "#{app}"
-                }
-            }
-        """
-        fs.writeFile path.join(app, '.cozy_conf.json'), data, (err) ->
-            if err?
-                log.error err.red
-            else
-                log.info "Config file successfully saved.".green
                 callback()
