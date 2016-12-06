@@ -9,19 +9,16 @@ helpers = require './helpers'
 
 class exports.RepoManager
 
-    createLocalRepo: (appname, isCoffee, callback) ->
+    createLocalRepo: (appname, callback) ->
 
         cmds = []
-        unless isCoffee
-            repo = "https://github.com/cozy/cozy-template.git"
-        else
-            repo = "https://github.com/cozy/cozy-template-coffee.git"
+        repo = "https://github.com/cozy/cozy-template.git"
 
         appPath = "#{process.cwd()}/#{appname}"
 
         cmds.push
             name: "git"
-            args: ['clone', repo,  appname]
+            args: ['clone', '-b', 'master', repo, appname]
             opts: cwd: process.cwd()
         cmds.push
             name: "git"
@@ -44,10 +41,6 @@ class exports.RepoManager
             name: "npm"
             args: ['install']
             opts: cwd: appPath
-        cmds.push
-            name: "npm"
-            args: ['install']
-            opts: cwd: "#{appPath}/client"
 
         log.info "Creating the project structure..."
 
@@ -77,7 +70,7 @@ class exports.RepoManager
             opts: cwd: appPath
         cmds.push
             name: "git"
-            args: ['commit', '-a', '-m', '"First commit."']
+            args: ['commit', '-a', '-m', '"Initial commit"']
             opts: cwd: appPath
         cmds.push
             name: "git"
@@ -101,25 +94,4 @@ class exports.RepoManager
                 log.error "Cannot create repository on Github.".red
                 log.error body
             else
-                callback()
-
-    saveConfig: (githubUser, app, url, callback) ->
-        data =
-        """
-            {
-                "cozy": {
-                    "appName": "#{app}",
-                    "url": "#{url}"
-                },
-                "github": {
-                    "user": "#{githubUser}",
-                    "repoName": "#{app}"
-                }
-            }
-        """
-        fs.writeFile path.join(app, '.cozy_conf.json'), data, (err) ->
-            if err?
-                log.error err.red
-            else
-                log.info "Config file successfully saved.".green
                 callback()

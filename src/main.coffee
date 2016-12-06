@@ -38,43 +38,41 @@ appData = require '../package.json'
 ### Tasks ###
 program
 .version appData.version
-.option '-u, --url <url>', 'Set url where lives your Cozy Cloud, default ' + \
-        'to localhost'
-.option '-g, --github <github>', 'Link new project to github account'
-.option '-c, --coffee', 'Create app template with coffee script files ' + \
-        'instead of JS files'
 
 
 program
 .command "uninstall <app>"
 .description "Uninstall given application"
-.action (app) ->
+.option '-u, --url [url]', 'Specify your Cozy cloud URL', 'http://localhost'
+.action (app, options) ->
     async.waterfall [
         helpers.promptPassword 'Cozy password'
-        (password, cb) -> appManager.uninstallApp app, program.url, password, cb
+        (password, cb) -> appManager.uninstallApp app, options.url, password, cb
     ], ->
         log.info "#{app} successfully uninstalled.".green
 
 
 program
 .command "update <app>"
-.description "Update application (git + npm install) and restart it " + \
-             "through haibu"
-.action (app) ->
+.description "Update application (git + npm install) and restart it"
+.option '-u, --url [url]', 'Specify your Cozy cloud URL', 'http://localhost'
+.action (app, options) ->
     async.waterfall [
         helpers.promptPassword 'Cozy password'
         (password, cb) ->
-            appManager.updateApp app, program.url, password, cb
+            appManager.updateApp app, options.url, password, cb
     ], ->
         log.info "#{app} successfully updated.".green
 
 
 program
 .command "new <appname>"
+.alias "init"
 .description "Create a new app suited to be deployed on a Cozy Cloud."
-.action (appname) ->
-    user = program.github
-    isCoffee = program.coffee
+.option '-g, --github <github>', 'Link new project to github account'
+.action (appname, options) ->
+    user = options.github
+    branch = options.branch
 
     if user?
         log.info "Create repo #{appname} for user #{user}..."
@@ -90,15 +88,14 @@ program
                     cb null, password, answers.url
 
             (password, url, cb) ->
-                projectManager.newProject(appname, isCoffee, url, user, \
-                                         password, cb)
+                projectManager.newProject(appname, url, user, password, cb)
 
         ], ->
             log.info "Project creation finished.".green
             process.exit 0
     else
         log.info "Create project folder: #{appname}"
-        repoManager.createLocalRepo appname, isCoffee, ->
+        repoManager.createLocalRepo appname, ->
             log.info "Project creation finished.".green
 
 # Install application for cozy stack
